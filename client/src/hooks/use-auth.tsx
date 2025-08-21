@@ -32,7 +32,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     onSuccess: (data) => {
       setToken(data.token);
       localStorage.setItem("auth_token", data.token);
-      queryClient.setQueryData(["/api/auth/me"], { user: data.user });
+      queryClient.setQueryData(["/api/auth/me"], data.user);
       queryClient.invalidateQueries({ queryKey: ["/api/auth/me"] });
     },
   });
@@ -45,7 +45,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     onSuccess: (data) => {
       setToken(data.token);
       localStorage.setItem("auth_token", data.token);
-      queryClient.setQueryData(["/api/auth/me"], { user: data.user });
+      queryClient.setQueryData(["/api/auth/me"], data.user);
       queryClient.invalidateQueries({ queryKey: ["/api/auth/me"] });
     },
   });
@@ -64,12 +64,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [token]);
 
   const value: AuthContextType = {
-    user: user?.user || null,
+    user: (user as UserWithDriver) || null,
     isLoading,
     login: loginMutation.mutateAsync,
     register: registerMutation.mutateAsync,
     logout,
-    isAuthenticated: !!user?.user && !!token,
+    isAuthenticated: !!user && !!token,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

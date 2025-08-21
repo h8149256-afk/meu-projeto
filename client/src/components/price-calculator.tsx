@@ -54,52 +54,57 @@ export default function PriceCalculator({ origin, destination, onPriceCalculated
   const canCalculate = origin && destination && origin !== destination;
 
   return (
-    <Card className="bg-gradient-to-r from-ocean-blue to-blue-600 text-white">
+    <Card className="border-blue-200 dark:border-blue-800">
       <CardContent className="p-4">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold">Preço Estimado</h3>
-          <Button
-            onClick={handleCalculatePrice}
-            disabled={!canCalculate || isCalculating}
-            variant="secondary"
-            size="sm"
-            className="bg-white text-ocean-blue hover:bg-gray-100"
-            data-testid="button-calculate-price"
-          >
-            <Calculator className="mr-2 h-4 w-4" />
-            {isCalculating ? "Calculando..." : "Calcular"}
-          </Button>
+        <div className="flex items-center gap-2 mb-3">
+          <Calculator className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+          <h3 className="font-semibold text-blue-900 dark:text-blue-100">
+            Calculadora de Preço
+          </h3>
         </div>
 
-        {isCalculating && (
-          <div className="text-center text-blue-200">
-            <div className="animate-spin inline-block w-6 h-6 border-2 border-white border-t-transparent rounded-full mb-2"></div>
-            <p>Calculando preço...</p>
-          </div>
+        {!canCalculate && (
+          <p className="text-gray-600 dark:text-gray-400 text-sm">
+            Selecione origem e destino para calcular o preço
+          </p>
         )}
 
-        {calculatedPrice && !isCalculating && (
-          <div data-testid="price-result">
-            <div className="text-3xl font-bold mb-2" data-testid="text-calculated-price">
-              {calculatedPrice.price} {calculatedPrice.currency}
-            </div>
-            <div className="text-blue-200 text-sm space-y-1">
-              <div>Tarifa base: 100 CVE</div>
-              <div>Estimativa baseada na rota selecionada</div>
-              <div className="flex items-center">
-                <Clock className="w-4 h-4 mr-1" />
-                Tempo estimado: 15-25 min
+        {canCalculate && (
+          <div className="space-y-3">
+            <Button
+              onClick={handleCalculatePrice}
+              disabled={isCalculating}
+              className="w-full bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600"
+              data-testid="button-calculate-price"
+            >
+              {isCalculating ? (
+                <>
+                  <Clock className="h-4 w-4 mr-2 animate-spin" />
+                  Calculando...
+                </>
+              ) : (
+                <>
+                  <Calculator className="h-4 w-4 mr-2" />
+                  Calcular Preço
+                </>
+              )}
+            </Button>
+
+            {calculatedPrice && (
+              <div className="p-3 bg-blue-50 dark:bg-blue-900/30 rounded-lg border border-blue-200 dark:border-blue-700">
+                <div className="text-center">
+                  <p className="text-sm text-blue-600 dark:text-blue-400 mb-1">
+                    Preço estimado:
+                  </p>
+                  <p className="text-2xl font-bold text-blue-900 dark:text-blue-100" data-testid="text-calculated-price">
+                    {calculatedPrice.price} {calculatedPrice.currency}
+                  </p>
+                  <p className="text-xs text-blue-500 dark:text-blue-400 mt-1">
+                    {origin} → {destination}
+                  </p>
+                </div>
               </div>
-            </div>
-          </div>
-        )}
-
-        {!calculatedPrice && !isCalculating && (
-          <div className="text-center text-blue-200" data-testid="price-prompt">
-            {!canCalculate 
-              ? "Preencha origem e destino para calcular o preço"
-              : "Clique em 'Calcular' para ver o preço estimado"
-            }
+            )}
           </div>
         )}
       </CardContent>

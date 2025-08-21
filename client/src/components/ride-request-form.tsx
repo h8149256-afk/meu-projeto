@@ -1,15 +1,16 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/use-auth";
 import { apiRequest } from "@/lib/queryClient";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import PriceCalculator from "./price-calculator";
+import PriceCalculator from "@/components/price-calculator";
 import { insertRideSchema } from "@shared/schema";
 import { MapPin, Phone, MessageCircle, Car } from "lucide-react";
 import { z } from "zod";
@@ -39,6 +40,7 @@ const locations = [
 
 export default function RideRequestForm() {
   const { toast } = useToast();
+  const { user } = useAuth();
   const queryClient = useQueryClient();
   const [calculatedPrice, setCalculatedPrice] = useState<number | null>(null);
 
@@ -47,10 +49,17 @@ export default function RideRequestForm() {
     defaultValues: {
       origin: "",
       destination: "",
-      passengerPhone: "",
+      passengerPhone: user?.phone || "",
       notes: "",
     },
   });
+
+  // Update phone when user data loads
+  useEffect(() => {
+    if (user?.phone) {
+      form.setValue('passengerPhone', user.phone);
+    }
+  }, [user?.phone, form]);
 
   const createRideMutation = useMutation({
     mutationFn: async (data: RideRequestFormData) => {
@@ -58,7 +67,13 @@ export default function RideRequestForm() {
         throw new Error("Calcule o preço antes de solicitar a corrida");
       }
 
-      const response = await apiRequest("POST", "/api/rides", data);
+      // Include required fields for the API
+      const rideData = {
+        ...data,
+        estimatedPrice: calculatedPrice * 100, // Convert to cents
+      };
+
+      const response = await apiRequest("POST", "/api/rides", rideData);
       return response.json();
     },
     onSuccess: () => {

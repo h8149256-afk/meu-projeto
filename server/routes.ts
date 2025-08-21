@@ -193,6 +193,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const rideData = insertRideSchema.parse({
         ...req.body,
         passengerId: req.user.id,
+        passengerPhone: req.user.phone || req.body.passengerPhone,
         estimatedPrice: calculatePrice(req.body.origin, req.body.destination) * 100, // Store in cents
       });
 
