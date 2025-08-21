@@ -1,0 +1,211 @@
+# Prompt detalhado para criar um site/app tipo Uber para a cidade de Mindelo, Cabo Verde
+
+> **Objetivo**: Desenvolver um web app (site PWA) de transporte tipo Uber, **sem mapa**, moderno e bonito, com áreas para **Passageiro**, **Motorista** e **Admin** (oculta), operando em **Mindelo, Cabo Verde**, com **login próprio (independente)** e **hospedagem local no meu laptop**. O sistema deve ser totalmente funcional, configurável por arquivos e fácil de instalar/rodar no VS Code.
+
+---
+
+## 1) Diretrizes de Produto & Design
+
+* **Público**: moradores e visitantes de Mindelo.
+* **Estilo visual**: UI moderna e limpa (glassmorphism leve, cantos arredondados, sombra suave), responsiva (mobile-first), ícones claros, tipografia legível.
+* **Tema**: claro/escuro automático; paleta com azul do mar, amarelo sol e neutros.
+* **Acessibilidade**: contraste AA, navegação por teclado, textos alternativos, labels nos inputs, feedbacks de erro.
+* **Idiomas**: PT como padrão; estrutura pronta para i18n.
+
+---
+
+## 2) Módulos e Áreas
+
+### 2.1 Passageiro
+
+* Cadastro/login (email + senha; opção telefone/SMS opcional futuro).
+* Fluxo de pedir corrida **sem mapa**: campos `Origem (bairro/rua/ponto)`, `Destino`, `Telefone`, `Observações`.
+* Botão **Calcular Preço** ➜ exibe preço estimado via tabela de preços oficial ou arquivo de configuração.
+* Botão **Chamar Táxi** ➜ cria solicitação de corrida (status: *pendente*).
+* Recebe notificações em tempo real quando um motorista **aceita/recusa**.
+* Vê card do motorista (nome, placa, foto opcional, avaliação média, número do motorista).
+* **Favoritos**: adicionar/remover motorista favorito.
+* Histórico de corridas, status e recibos simples (PDF/HTML imprimível).
+
+### 2.2 Motorista
+
+* Cadastro/login.
+* **Plano de assinatura**: 1º mês **grátis**; depois **1.500 CVE/mês** (mensalidade obrigatória). Bloquear chamadas se plano vencido.
+* Tela **Pedidos**: lista de solicitações com Origem/Destino, preço estimado e **número do passageiro**.
+* Ações: **Aceitar** / **Recusar**.
+* Após aceitar: mostra detalhes; botão **Iniciar Corrida** e depois **Finalizar Corrida**.
+* Ao finalizar: status do pedido vira **Concluído**; registra horário e quilometragem opcional (campo livre).
+* Carteira: ver status da assinatura, data de expiração, faturas.
+
+### 2.3 Admin (área oculta, não listada no menu)
+
+* Acesso por URL secreta (ex.: `/admin-<slug>`), além de permissão de usuário admin.
+* Visão geral: corridas em tempo real, usuários, motoristas, assinaturas, métricas básicas.
+* **Gestão total**: cancelar/reativar assinaturas, editar preços, banir contas, ver logs, exportar CSV.
+* Configurações do sistema (ver Seção 4): mudanças persistem em arquivos `.json/.yaml` e em variáveis `.env`.
+* CRUD de Tabela de Preços (ver Seção 3).
+
+---
+
+## 3) Preços (Mindelo, Cabo Verde)
+
+* **Fonte**: usar **Tabela de Preços Oficial** de Mindelo *ou* um arquivo de configuração local, caso não exista ou para ajustes.
+* Implementar **engine de preço** com estas regras:
+
+  * Tarifa base (CVE) + preço por km + preço por minuto (opcional) + adicionais (noite, fim de semana, feriados).
+  * Tabela por período: *dia*, *noite*, *finais de semana/feriados*.
+  * Regras especiais por **zonas/bairros** (origem/destino) quando aplicável.
+* **Arquivos de configuração** (editáveis sem código):
+
+  * `config/prices.json` (ou `.yaml`):
+
+    ```json
+    {
+      "currency": "CVE",
+      "base_fare": 100,
+      "per_km": 80,
+      "per_min": 0,
+      "night_multiplier": 1.2,
+      "weekend_multiplier": 1.15,
+      "zones": [
+        {"name": "Centro→Laginha", "fixed_price": 300},
+        {"name": "Centro→Aeroporto", "fixed_price": 1200}
+      ],
+      "periods": {
+        "day": {"start": "06:00", "end": "21:59"},
+        "night": {"start": "22:00", "end": "05:59"}
+      }
+    }
+    ```
+  * `config/places.csv`: lista de bairros/pontos (para autocompletar sem mapa).
+  * `config/holidays.csv`: datas de feriados locais.
+* **Cálculo**: se existir `fixed_price` para a combinação, usar; caso contrário, calcular por km/min estimados por distância aproximada manual (campo opcional) ou tabela de zonas.
+
+---
+
+## 4) Configuração e Operação (arquivos + .env)
+
+* **.env** com: PORTA, URL\_BASE, JWT\_SECRET, DATABASE\_URL (SQLite por padrão), ADMIN\_SLUG, ADMIN\_EMAIL, ADMIN\_PASSWORD, SMS/Email (opcionais), TIMEZONE=`Atlantic/Cape_Verde`.
+* **Arquivos** em `config/` para: preços, zonas, feriados, branding (cores/logo), textos (i18n), recursos (limites), e flags (ativar desativar recursos).
+* **Sem dependências externas obrigatórias**: login/autenticação, cálculo de preço e rotas funcionam localmente.
+
+---
+
+## 5) Autenticação, Autorização e Assinaturas
+
+* **Login independente** (email+senha). Guardar senhas com hash forte (bcrypt/argon2). Sessões via JWT + refresh tokens.
+* Perfis: `passageiro`, `motorista`, `admin` (RBAC).
+* **Assinatura do motorista**: trial 30 dias; depois mês a mês por **1.500 CVE**. Estados: *ativo*, *grátis*, *vencido*, *cancelado*.
+* Bloquear ações de aceitar corrida se `vencido`. Exibir banner com botão **Renovar** (mesmo que, no MVP, apenas registre manualmente pagamento no Admin).
+
+---
+
+## 6) Fluxos principais
+
+1. **Passageiro pede corrida**: preenche Origem/Destino/Telefone/Obs ➜ **Calcular Preço** ➜ mostra preço ➜ **Chamar Táxi**.
+2. **Motorista recebe pedido** (push em tempo real via WebSocket/Server-Sent Events) ➜ **Aceitar** ou **Recusar**.
+3. Se aceitar: passageiro vê nome do motorista, status **A Caminho** ➜ motorista **Inicia** ➜ **Finaliza** no destino.
+4. **Contato**: motorista vê o **número do passageiro** para ligar.
+5. **Favoritar**: passageiro pode favoritar o motorista ao final.
+
+---
+
+## 7) Sem mapa, mas com usabilidade forte
+
+* Autocomplete de locais baseado em `config/places.csv`.
+* Campo de distância estimada (opcional) para ajustar o cálculo quando não houver rota.
+* Cards claros com tempo médio genérico (texto), preço e status.
+
+---
+
+## 8) Painéis e Páginas
+
+* Landing (marketing, como funciona, CTA "Pedir Táxi").
+* App Passageiro (dashboard, pedir corrida, histórico, favoritos, perfil).
+* App Motorista (pedidos, corridas ativas, carteira/assinatura, perfil).
+* Admin (oculto): dashboards, CRUDs, configurações, logs, exportações.
+* Páginas legais: Termos, Privacidade, Contato/Suporte (FAQ simples editável em `config/faq.md`).
+
+---
+
+## 9) Tecnologias (sugestão para quem vai implementar)
+
+* **Front-end**: React/Next.js ou Vue/Nuxt (PWA habilitada), Tailwind CSS; formulários com validação.
+* **Back-end**: Node.js (Fastify/Express) com WebSocket/SSE; banco **SQLite** local por padrão (um arquivo no projeto).
+* **ORM**: Prisma/Drizzle (migrations automáticas).
+* **Auth**: JWT + Refresh; RBAC.
+* **Build local**: `npm run dev` e `npm run build` com scripts prontos.
+
+> **Obs.**: A implementação deve seguir este prompt, mas é livre para melhorias técnicas mantendo os requisitos.
+
+---
+
+## 10) Banco de dados (mínimo)
+
+* Tabelas: `users` (id, nome, email, telefone, hash, role, created\_at), `drivers` (user\_id, placa, doc\_verificado), `rides` (id, passenger\_id, driver\_id, origem, destino, telefone, obs, preco\_estimado, status, timestamps), `favorites` (passageiro↔motorista), `subscriptions` (driver\_id, status, trial\_end, current\_period\_end, valor), `audit_logs` (usuario, ação, payload, timestamp).
+
+---
+
+## 11) Segurança e Privacidade
+
+* Hash de senha forte, rate limit em login, proteção CSRF/XSS, validação de inputs, logs de auditoria.
+* RGPD/LGPD-like: consentimento para termos; opção de apagar conta e dados.
+
+---
+
+## 12) Entregáveis (o que deve ser criado)
+
+1. **Aplicação completa** (frontend + backend) conforme requisitos.
+2. **Arquivos de configuração** em `config/` (preços, locais, feriados, branding, FAQ, i18n).
+3. **Scripts NPM**: `dev`, `build`, `start`, `seed`, `migrate`, `lint`.
+4. **Documentação**: `README.md` com **passo a passo para rodar no VS Code**, incluindo:
+
+   * Instalar Node.js e dependências (`npm i`).
+   * Configurar `.env` (com exemplo `.env.example`).
+   * Instruções para **hospedar localmente no laptop** e expor na rede local (ex.: usar IP da máquina, firewall, porta).
+   * Como iniciar/encerrar, criar usuário admin, reset de senha, backup/restauração do SQLite.
+   * Como editar preços/zonas/feriados e publicar mudanças.
+   * Como gerar build PWA, limpar cache, atualizar versão.
+5. **Seed** de dados: usuários de teste (admin, passageiro, motorista), alguns locais em `places.csv`, preços básicos em `prices.json`.
+6. **Testes** (mínimo): validação de formulários e fluxo principal de corrida.
+
+---
+
+## 13) Critérios de Aceitação (checklist)
+
+* [ ] Login funciona **sem serviços externos**; sessões seguras.
+* [ ] 1º mês **grátis** para motoristas; cobrança de **1.500 CVE/mês** depois; bloqueio quando vencido.
+* [ ] Passageiro consegue **calcular preço** e **chamar táxi** facilmente, sem mapa.
+* [ ] Motorista recebe pedido e pode **aceitar/recusar**; passageiro vê status em tempo real.
+* [ ] Motorista pode **iniciar** e **finalizar** corrida; passageiro pode **favoritar** motorista.
+* [ ] Admin (oculto) acessa tudo: usuários, corridas, assinaturas, preços, logs, exportações.
+* [ ] Preços podem ser alterados por **arquivo** e/ou por **tabela oficial**.
+* [ ] App responsivo, acessível e estável em mobile/desktop.
+* [ ] Documentação clara para **rodar no VS Code** e **hospedar no laptop**.
+
+---
+
+## 14) Melhorias sugeridas (opcional, mas desejável)
+
+* Avaliações (1–5) e comentários após a corrida.
+* Notificações por email/SMS (pluggable; desativadas por padrão, configuráveis via `.env`).
+* Exportar recibo em PDF.
+* Filas simples para pedidos (priorizar motoristas mais próximos por zona ou favoritos do passageiro).
+* Modo operação por **zonas** (Centro, Laginha, Ribeira Bote, etc.).
+* Estatísticas: corridas/dia, valor médio, taxa de aceitação.
+* Upload de foto do motorista e do veículo (opcional).
+
+---
+
+## 15) Observações finais
+
+* **Sem mapa**: o produto deve ser 100% utilizável apenas com texto/autocomplete e cálculo por tabela/zonas.
+* **Independência**: nenhum serviço de terceiros é necessário para login/rodar localmente.
+* **Controle total**: Admin tem visão e ação sobre tudo; área não visível no site público.
+* **Mindelo/CVE**: timezone, moeda (CVE) e linguagem ajustados para Cabo Verde.
+
+---
+
+### Resultado esperado
+
+Entregar um repositório (ou pasta) com a aplicação pronta, configurações, documentação e seeds, capaz de **iniciar no meu laptop** e ser acessada por outros dispositivos na mesma rede, conforme todas as especificações acima.
