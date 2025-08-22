@@ -5,7 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeProvider } from "@/components/theme-provider";
 import { AuthProvider } from "@/hooks/use-auth";
-import { AuthRedirect } from "@/components/auth-redirect";
+import { ProtectedRoute } from "@/components/protected-route";
 import LandingPage from "@/pages/landing";
 import AuthPage from "@/pages/auth";
 import PassengerDashboard from "@/pages/passenger-dashboard";
@@ -17,13 +17,22 @@ function Router() {
   return (
     <Switch>
       <Route path="/" component={LandingPage} />
-      <Route path="/auth">
-        <AuthPage />
-        <AuthRedirect />
+      <Route path="/auth" component={AuthPage} />
+      <Route path="/passenger">
+        <ProtectedRoute requiredRole="passenger">
+          <PassengerDashboard />
+        </ProtectedRoute>
       </Route>
-      <Route path="/passenger" component={PassengerDashboard} />
-      <Route path="/driver" component={DriverDashboard} />
-      <Route path="/admin-secret-2024" component={AdminDashboard} />
+      <Route path="/driver">
+        <ProtectedRoute requiredRole="driver">
+          <DriverDashboard />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/admin-secret-2024">
+        <ProtectedRoute requiredRole="admin">
+          <AdminDashboard />
+        </ProtectedRoute>
+      </Route>
       <Route component={NotFound} />
     </Switch>
   );

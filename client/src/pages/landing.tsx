@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "wouter";
 import { useTheme } from "@/components/theme-provider";
+import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { 
@@ -22,6 +23,28 @@ export default function LandingPage() {
   const { theme, setTheme } = useTheme();
   const [, setLocation] = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const { user, isAuthenticated, isLoading } = useAuth();
+  
+  // Redirect authenticated users to their dashboard
+  useEffect(() => {
+    if (!isLoading && isAuthenticated && user) {
+      console.log('Redirecting authenticated user from landing:', user.email, 'Role:', user.role);
+      
+      switch (user.role) {
+        case 'admin':
+          setLocation('/admin-secret-2024');
+          break;
+        case 'driver':
+          setLocation('/driver');
+          break;
+        case 'passenger':
+          setLocation('/passenger');
+          break;
+        default:
+          break;
+      }
+    }
+  }, [isAuthenticated, user, isLoading, setLocation]);
 
   const scrollToSection = (id: string) => {
     const element = document.getElementById(id);

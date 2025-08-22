@@ -65,8 +65,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setToken(data.token);
         localStorage.setItem("auth_token", data.token);
         queryClient.setQueryData(["/api/auth/me"], data.user);
-        queryClient.invalidateQueries({ queryKey: ["/api/auth/me"] });
-        console.log('Login successful for user:', data.user.email);
+        console.log('Login successful for user:', data.user.email, 'Role:', data.user.role);
+        // Don't invalidate queries immediately to avoid clearing the data
       } catch (error) {
         console.error('Error saving login data:', error);
       }
@@ -107,8 +107,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setToken(data.token);
         localStorage.setItem("auth_token", data.token);
         queryClient.setQueryData(["/api/auth/me"], data.user);
-        queryClient.invalidateQueries({ queryKey: ["/api/auth/me"] });
-        console.log('Registration successful for user:', data.user.email);
+        console.log('Registration successful for user:', data.user.email, 'Role:', data.user.role);
+        // Don't invalidate queries immediately to avoid clearing the data
       } catch (error) {
         console.error('Error saving registration data:', error);
       }

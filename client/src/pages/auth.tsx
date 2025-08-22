@@ -54,12 +54,12 @@ export default function AuthPage() {
         description: "Bem-vindo ao MindeloRide.",
       });
 
-      // Get user data from the auth context after successful login
+      // Redirect based on user role - get user data from auth context
       setTimeout(() => {
-        // The auth context will have the user data
-        // We'll check it in a moment, but for now redirect to a safe page
-        window.location.href = '/';
-      }, 1500);
+        // The user data will be available in the auth context
+        // Use proper routing instead of window.location
+        setLocation('/');
+      }, 1000);
     } catch (error: any) {
       console.error('Login error:', error);
       toast({
@@ -100,7 +100,7 @@ export default function AuthPage() {
         } else {
           setLocation("/passenger");
         }
-      }, 1500);
+      }, 1000);
     } catch (error: any) {
       console.error('Registration error:', error);
       toast({
