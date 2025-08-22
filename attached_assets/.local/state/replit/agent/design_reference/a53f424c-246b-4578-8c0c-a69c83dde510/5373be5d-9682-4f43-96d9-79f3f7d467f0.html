@@ -1,0 +1,827 @@
+<html lang="pt" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MindeloRide - Transporte Inteligente em Mindelo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'ocean-blue': '#0EA5E9',
+                        'sun-yellow': '#FCD34D',
+                        'deep-ocean': '#0F172A',
+                        'coastal-mist': '#F8FAFC',
+                        'neutral-slate': '#64748B'
+                    },
+                    fontFamily: {
+                        'inter': ['Inter', 'system-ui', 'sans-serif']
+                    },
+                    backdropBlur: {
+                        'xs': '2px'
+                    }
+                }
+            }
+        };
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .glassmorphism {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .glassmorphism-dark {
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .hero-gradient {
+            background: linear-gradient(135deg, #0EA5E9 0%, #3B82F6 50%, #1E40AF 100%);
+        }
+        .text-gradient {
+            background: linear-gradient(135deg, #0EA5E9, #3B82F6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+    </style>
+</head>
+<body class="font-inter bg-coastal-mist dark:bg-deep-ocean transition-colors duration-300">
+
+    <!-- @COMPONENT: Navigation -->
+    <nav class="fixed top-0 w-full z-50 glassmorphism dark:glassmorphism-dark">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center py-4">
+                <div class="flex items-center space-x-2">
+                    <div class="w-10 h-10 bg-gradient-to-br from-ocean-blue to-blue-600 rounded-xl flex items-center justify-center">
+                        <i class="fas fa-car text-white text-lg"></i>
+                    </div>
+                    <span class="text-2xl font-bold text-gray-800 dark:text-white">MindeloRide</span>
+                </div>
+                
+                <div class="hidden md:flex items-center space-x-8">
+                    <a href="#como-funciona" class="text-gray-600 dark:text-gray-300 hover:text-ocean-blue transition-colors">Como Funciona</a>
+                    <a href="#precos" class="text-gray-600 dark:text-gray-300 hover:text-ocean-blue transition-colors">Preços</a>
+                    <a href="#suporte" class="text-gray-600 dark:text-gray-300 hover:text-ocean-blue transition-colors">Suporte</a>
+                </div>
+
+                <div class="flex items-center space-x-4">
+                    <button id="themeToggle" class="p-2 text-gray-600 dark:text-gray-300 hover:text-ocean-blue transition-colors">
+                        <i class="fas fa-moon dark:hidden"></i>
+                        <i class="fas fa-sun hidden dark:inline"></i>
+                    </button>
+                    <button onclick="showLoginModal()" class="px-4 py-2 text-ocean-blue border border-ocean-blue rounded-lg hover:bg-ocean-blue hover:text-white transition-all">
+                        Entrar
+                    </button>
+                    <button onclick="showRideApp()" class="px-6 py-2 bg-ocean-blue text-white rounded-lg hover:bg-blue-600 transition-all font-medium">
+                        Pedir Táxi
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+    <!-- @END_COMPONENT: Navigation -->
+
+    <!-- @COMPONENT: Hero Section -->
+    <section class="pt-20 pb-16 hero-gradient relative overflow-hidden">
+        <!-- Ocean wave pattern background -->
+        <div class="absolute inset-0 opacity-10">
+            <div class="absolute inset-0" style="background-image: url('data:image/svg+xml,<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 100 20\"><path d=\"M0,10 Q25,0 50,10 T100,10 V20 H0 Z\" fill=\"white\" opacity=\"0.1\"/></svg>'); background-size: 200px 40px; animation: wave 10s linear infinite;"></div>
+        </div>
+
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
+            <div class="text-center">
+                <h1 class="text-5xl md:text-6xl font-bold text-white mb-6 leading-tight">
+                    Transporte Inteligente
+                    <br>em <span class="text-sun-yellow">Mindelo</span>
+                </h1>
+                <p class="text-xl md:text-2xl text-blue-100 mb-12 max-w-3xl mx-auto">
+                    Conectamos passageiros e motoristas de forma rápida e segura. 
+                    Solicite sua corrida em segundos, sem complicações.
+                </p>
+
+                <div class="flex flex-col sm:flex-row gap-4 justify-center items-center">
+                    <button onclick="showRideApp()" class="px-8 py-4 bg-white text-ocean-blue rounded-xl font-semibold hover:bg-gray-50 transition-all shadow-xl text-lg">
+                        <i class="fas fa-taxi mr-2"></i>
+                        Pedir Táxi Agora
+                    </button>
+                    <button onclick="showDriverApp()" class="px-8 py-4 bg-transparent text-white border-2 border-white rounded-xl font-semibold hover:bg-white hover:text-ocean-blue transition-all text-lg">
+                        <i class="fas fa-car mr-2"></i>
+                        Ser Motorista
+                    </button>
+                </div>
+
+                <div class="mt-16 grid grid-cols-1 md:grid-cols-3 gap-8">
+                    <div class="glassmorphism rounded-2xl p-6 text-white">
+                        <div class="w-12 h-12 bg-sun-yellow rounded-xl flex items-center justify-center mb-4 mx-auto">
+                            <i class="fas fa-clock text-gray-800"></i>
+                        </div>
+                        <h3 class="font-semibold mb-2">Rápido</h3>
+                        <p class="text-blue-100 text-sm">Motoristas conectados 24/7</p>
+                    </div>
+                    <div class="glassmorphism rounded-2xl p-6 text-white">
+                        <div class="w-12 h-12 bg-sun-yellow rounded-xl flex items-center justify-center mb-4 mx-auto">
+                            <i class="fas fa-shield-alt text-gray-800"></i>
+                        </div>
+                        <h3 class="font-semibold mb-2">Seguro</h3>
+                        <p class="text-blue-100 text-sm">Motoristas verificados</p>
+                    </div>
+                    <div class="glassmorphism rounded-2xl p-6 text-white">
+                        <div class="w-12 h-12 bg-sun-yellow rounded-xl flex items-center justify-center mb-4 mx-auto">
+                            <i class="fas fa-money-bill-wave text-gray-800"></i>
+                        </div>
+                        <h3 class="font-semibold mb-2">Preços Justos</h3>
+                        <p class="text-blue-100 text-sm">Tabela oficial de Mindelo</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <!-- @END_COMPONENT: Hero Section -->
+
+    <!-- @COMPONENT: How It Works Section -->
+    <section id="como-funciona" class="py-20 bg-white dark:bg-gray-900">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl font-bold text-gray-800 dark:text-white mb-4">Como Funciona</h2>
+                <p class="text-xl text-gray-600 dark:text-gray-300">Simples como 1, 2, 3</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="text-center">
+                    <div class="w-20 h-20 bg-gradient-to-br from-ocean-blue to-blue-600 rounded-full flex items-center justify-center mx-auto mb-6">
+                        <span class="text-2xl font-bold text-white">1</span>
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-800 dark:text-white mb-4">Informe o Destino</h3>
+                    <p class="text-gray-600 dark:text-gray-300">Digite onde está e para onde quer ir. Nosso sistema calcula o preço automaticamente.</p>
+                </div>
+                <div class="text-center">
+                    <div class="w-20 h-20 bg-gradient-to-br from-ocean-blue to-blue-600 rounded-full flex items-center justify-center mx-auto mb-6">
+                        <span class="text-2xl font-bold text-white">2</span>
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-800 dark:text-white mb-4">Encontre um Motorista</h3>
+                    <p class="text-gray-600 dark:text-gray-300">Um motorista próximo aceita sua corrida e você recebe os detalhes do contato.</p>
+                </div>
+                <div class="text-center">
+                    <div class="w-20 h-20 bg-gradient-to-br from-ocean-blue to-blue-600 rounded-full flex items-center justify-center mx-auto mb-6">
+                        <span class="text-2xl font-bold text-white">3</span>
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-800 dark:text-white mb-4">Chegue ao Destino</h3>
+                    <p class="text-gray-600 dark:text-gray-300">Relaxe durante a viagem e avalie o motorista ao final.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+    <!-- @END_COMPONENT: How It Works Section -->
+
+    <!-- @COMPONENT: Pricing Section -->
+    <section id="precos" class="py-20 bg-gray-50 dark:bg-gray-800">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl font-bold text-gray-800 dark:text-white mb-4">Preços Transparentes</h2>
+                <p class="text-xl text-gray-600 dark:text-gray-300">Baseados na tabela oficial de Mindelo</p>
+            </div>
+
+            <div class="bg-white dark:bg-gray-900 rounded-2xl shadow-xl p-8">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div>
+                        <h3 class="text-2xl font-semibold text-gray-800 dark:text-white mb-6">Rotas Populares</h3>
+                        <div class="space-y-4">
+                            <div class="flex justify-between items-center p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                                <span class="text-gray-700 dark:text-gray-300">Centro → Laginha</span>
+                                <span class="font-semibold text-ocean-blue">300 CVE</span>
+                            </div>
+                            <div class="flex justify-between items-center p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                                <span class="text-gray-700 dark:text-gray-300">Centro → Aeroporto</span>
+                                <span class="font-semibold text-ocean-blue">1.200 CVE</span>
+                            </div>
+                            <div class="flex justify-between items-center p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                                <span class="text-gray-700 dark:text-gray-300">Laginha → Ribeira Bote</span>
+                                <span class="font-semibold text-ocean-blue">450 CVE</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <h3 class="text-2xl font-semibold text-gray-800 dark:text-white mb-6">Tarifas</h3>
+                        <div class="space-y-4">
+                            <div class="flex justify-between items-center p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                                <span class="text-gray-700 dark:text-gray-300">Tarifa Base</span>
+                                <span class="font-semibold text-ocean-blue">100 CVE</span>
+                            </div>
+                            <div class="flex justify-between items-center p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                                <span class="text-gray-700 dark:text-gray-300">Por Km</span>
+                                <span class="font-semibold text-ocean-blue">80 CVE</span>
+                            </div>
+                            <div class="flex justify-between items-center p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                                <span class="text-gray-700 dark:text-gray-300">Noite (22h-6h)</span>
+                                <span class="font-semibold text-sun-yellow">+20%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <!-- @END_COMPONENT: Pricing Section -->
+
+    <!-- @COMPONENT: Driver CTA Section -->
+    <section class="py-20 bg-gradient-to-br from-sun-yellow to-yellow-400">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <h2 class="text-4xl font-bold text-gray-800 mb-4">Seja um Motorista</h2>
+            <p class="text-xl text-gray-700 mb-8 max-w-2xl mx-auto">
+                Primeiro mês grátis! Depois apenas 1.500 CVE/mês. 
+                Comece a ganhar dinheiro com seu carro hoje mesmo.
+            </p>
+            <button onclick="showDriverApp()" class="px-8 py-4 bg-gray-800 text-white rounded-xl font-semibold hover:bg-gray-700 transition-all shadow-xl text-lg">
+                <i class="fas fa-user-plus mr-2"></i>
+                Cadastrar como Motorista
+            </button>
+        </div>
+    </section>
+    <!-- @END_COMPONENT: Driver CTA Section -->
+
+    <!-- @COMPONENT: Footer -->
+    <footer class="bg-deep-ocean text-white py-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <div>
+                    <div class="flex items-center space-x-2 mb-4">
+                        <div class="w-8 h-8 bg-ocean-blue rounded-lg flex items-center justify-center">
+                            <i class="fas fa-car text-white"></i>
+                        </div>
+                        <span class="text-xl font-bold">MindeloRide</span>
+                    </div>
+                    <p class="text-gray-300">Transporte inteligente para Mindelo, Cabo Verde.</p>
+                </div>
+                <div>
+                    <h4 class="font-semibold mb-4">Para Passageiros</h4>
+                    <ul class="space-y-2 text-gray-300">
+                        <li><a href="#" class="hover:text-white">Pedir Corrida</a></li>
+                        <li><a href="#" class="hover:text-white">Histórico</a></li>
+                        <li><a href="#" class="hover:text-white">Favoritos</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-semibold mb-4">Para Motoristas</h4>
+                    <ul class="space-y-2 text-gray-300">
+                        <li><a href="#" class="hover:text-white">Cadastre-se</a></li>
+                        <li><a href="#" class="hover:text-white">Assinatura</a></li>
+                        <li><a href="#" class="hover:text-white">Suporte</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-semibold mb-4">Suporte</h4>
+                    <ul class="space-y-2 text-gray-300">
+                        <li><a href="#" class="hover:text-white">FAQ</a></li>
+                        <li><a href="#" class="hover:text-white">Contato</a></li>
+                        <li><a href="#" class="hover:text-white">Termos</a></li>
+                        <li><a href="#" class="hover:text-white">Privacidade</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="border-t border-gray-700 mt-8 pt-8 text-center text-gray-300">
+                <p>&copy; 2024 MindeloRide. Todos os direitos reservados.</p>
+            </div>
+        </div>
+    </footer>
+    <!-- @END_COMPONENT: Footer -->
+
+    <!-- @COMPONENT: Login Modal -->
+    <div id="loginModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white dark:bg-gray-800 rounded-2xl p-8 w-full max-w-md mx-4">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-2xl font-bold text-gray-800 dark:text-white">Entrar</h3>
+                <button onclick="hideLoginModal()" class="text-gray-500 hover:text-gray-700">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <form>
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Email</label>
+                    <input type="email" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-ocean-blue focus:border-transparent dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="seu@email.com">
+                </div>
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Senha</label>
+                    <input type="password" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-ocean-blue focus:border-transparent dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="••••••••">
+                </div>
+                <button type="submit" class="w-full py-3 bg-ocean-blue text-white rounded-lg font-semibold hover:bg-blue-600 transition-all">
+                    Entrar
+                </button>
+            </form>
+            
+            <div class="mt-6 text-center">
+                <p class="text-gray-600 dark:text-gray-300">Não tem conta?</p>
+                <div class="flex gap-2 mt-2">
+                    <button onclick="showPassengerSignup()" class="flex-1 py-2 border border-ocean-blue text-ocean-blue rounded-lg hover:bg-ocean-blue hover:text-white transition-all">
+                        Passageiro
+                    </button>
+                    <button onclick="showDriverSignup()" class="flex-1 py-2 border border-sun-yellow text-yellow-600 rounded-lg hover:bg-sun-yellow hover:text-gray-800 transition-all">
+                        Motorista
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- @END_COMPONENT: Login Modal -->
+
+    <!-- @COMPONENT: Ride Request App -->
+    <div id="rideApp" class="fixed inset-0 bg-white dark:bg-gray-900 z-50 hidden overflow-y-auto">
+        <!-- @COMPONENT: App Header -->
+        <div class="bg-ocean-blue text-white p-4 sticky top-0 z-10">
+            <div class="flex items-center justify-between">
+                <button onclick="hideRideApp()" class="text-white hover:text-gray-200">
+                    <i class="fas fa-arrow-left text-xl"></i>
+                </button>
+                <h1 class="text-xl font-semibold">Pedir Corrida</h1>
+                <div class="flex items-center space-x-2">
+                    <i class="fas fa-user-circle text-2xl"></i>
+                </div>
+            </div>
+        </div>
+        <!-- @END_COMPONENT: App Header -->
+
+        <div class="p-4 space-y-6">
+            <!-- @COMPONENT: Ride Request Form -->
+            <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6">
+                <h2 class="text-xl font-semibold text-gray-800 dark:text-white mb-4">Nova Corrida</h2>
+                
+                <form class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            <i class="fas fa-map-marker-alt text-green-500 mr-2"></i>Origem
+                        </label>
+                        <input type="text" list="locations" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-ocean-blue dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="Centro, Laginha, Ribeira Bote...">
+                        <datalist id="locations">
+                            <option value="Centro">
+                            <option value="Laginha">
+                            <option value="Ribeira Bote">
+                            <option value="Mindelo Aeroporto">
+                            <option value="Hospital Baptista de Sousa">
+                        </datalist>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            <i class="fas fa-map-marker-alt text-red-500 mr-2"></i>Destino
+                        </label>
+                        <input type="text" list="locations" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-ocean-blue dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="Para onde você vai?">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            <i class="fas fa-phone text-ocean-blue mr-2"></i>Telefone
+                        </label>
+                        <input type="tel" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-ocean-blue dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="+238 xxx xxxx">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            <i class="fas fa-comment text-gray-500 mr-2"></i>Observações (opcional)
+                        </label>
+                        <textarea class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-ocean-blue dark:bg-gray-700 dark:border-gray-600 dark:text-white" rows="2" placeholder="Ponto de referência, instruções especiais..."></textarea>
+                    </div>
+                </form>
+            </div>
+            <!-- @END_COMPONENT: Ride Request Form -->
+
+            <!-- @COMPONENT: Price Calculation -->
+            <div class="bg-gradient-to-r from-ocean-blue to-blue-600 rounded-2xl text-white p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-semibold">Preço Estimado</h3>
+                    <button onclick="calculatePrice()" class="px-4 py-2 bg-white text-ocean-blue rounded-lg font-medium hover:bg-gray-100 transition-all">
+                        <i class="fas fa-calculator mr-2"></i>Calcular
+                    </button>
+                </div>
+                
+                <div id="priceResult" class="hidden">
+                    <div class="text-3xl font-bold mb-2">450 CVE</div>
+                    <div class="text-blue-200 text-sm">
+                        <div>Tarifa base: 100 CVE</div>
+                        <div>Distância estimada: 4.5 km × 80 CVE = 350 CVE</div>
+                    </div>
+                </div>
+                
+                <div id="pricePrompt" class="text-center text-blue-200">
+                    Preencha origem e destino para calcular o preço
+                </div>
+            </div>
+            <!-- @END_COMPONENT: Price Calculation -->
+
+            <!-- @COMPONENT: Call Taxi Button -->
+            <button onclick="callTaxi()" class="w-full py-4 bg-sun-yellow text-gray-800 rounded-2xl font-bold text-lg hover:bg-yellow-400 transition-all shadow-lg">
+                <i class="fas fa-taxi mr-2"></i>Chamar Táxi
+            </button>
+            <!-- @END_COMPONENT: Call Taxi Button -->
+
+            <!-- @COMPONENT: Recent Rides -->
+            <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6">
+                <h3 class="text-lg font-semibold text-gray-800 dark:text-white mb-4">Corridas Recentes</h3>
+                
+                <div class="space-y-3">
+                    <div class="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                        <div>
+                            <div class="font-medium text-gray-800 dark:text-white">Centro → Laginha</div>
+                            <div class="text-sm text-gray-500 dark:text-gray-400">Hoje, 14:30</div>
+                        </div>
+                        <div class="text-right">
+                            <div class="font-semibold text-green-600">300 CVE</div>
+                            <div class="text-sm text-gray-500">Concluída</div>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                        <div>
+                            <div class="font-medium text-gray-800 dark:text-white">Laginha → Aeroporto</div>
+                            <div class="text-sm text-gray-500 dark:text-gray-400">Ontem, 09:15</div>
+                        </div>
+                        <div class="text-right">
+                            <div class="font-semibold text-green-600">1.200 CVE</div>
+                            <div class="text-sm text-gray-500">Concluída</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- @END_COMPONENT: Recent Rides -->
+        </div>
+
+        <!-- @COMPONENT: Bottom Navigation -->
+        <div class="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700">
+            <div class="flex justify-around py-2">
+                <button class="flex flex-col items-center py-2 px-4 text-ocean-blue">
+                    <i class="fas fa-home text-xl mb-1"></i>
+                    <span class="text-xs">Início</span>
+                </button>
+                <button class="flex flex-col items-center py-2 px-4 text-gray-500">
+                    <i class="fas fa-history text-xl mb-1"></i>
+                    <span class="text-xs">Histórico</span>
+                </button>
+                <button class="flex flex-col items-center py-2 px-4 text-gray-500">
+                    <i class="fas fa-heart text-xl mb-1"></i>
+                    <span class="text-xs">Favoritos</span>
+                </button>
+                <button class="flex flex-col items-center py-2 px-4 text-gray-500">
+                    <i class="fas fa-user text-xl mb-1"></i>
+                    <span class="text-xs">Perfil</span>
+                </button>
+            </div>
+        </div>
+        <!-- @END_COMPONENT: Bottom Navigation -->
+    </div>
+    <!-- @END_COMPONENT: Ride Request App -->
+
+    <!-- @COMPONENT: Driver App -->
+    <div id="driverApp" class="fixed inset-0 bg-white dark:bg-gray-900 z-50 hidden overflow-y-auto">
+        <!-- @COMPONENT: Driver Header -->
+        <div class="bg-gradient-to-r from-sun-yellow to-yellow-400 text-gray-800 p-4 sticky top-0 z-10">
+            <div class="flex items-center justify-between">
+                <button onclick="hideDriverApp()" class="text-gray-800 hover:text-gray-600">
+                    <i class="fas fa-arrow-left text-xl"></i>
+                </button>
+                <h1 class="text-xl font-semibold">Área do Motorista</h1>
+                <div class="flex items-center space-x-2">
+                    <div class="w-3 h-3 bg-green-500 rounded-full"></div>
+                    <span class="text-sm font-medium">Online</span>
+                </div>
+            </div>
+        </div>
+        <!-- @END_COMPONENT: Driver Header -->
+
+        <div class="p-4 space-y-6 pb-20">
+            <!-- @COMPONENT: Subscription Status -->
+            <div class="bg-gradient-to-r from-green-500 to-green-600 rounded-2xl text-white p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-semibold">Plano Ativo</h3>
+                    <span class="px-3 py-1 bg-white text-green-600 rounded-full text-sm font-medium">GRÁTIS</span>
+                </div>
+                <div class="text-sm opacity-90 mb-2">Período de teste - 23 dias restantes</div>
+                <div class="text-2xl font-bold">Próximo pagamento: 1.500 CVE</div>
+                <div class="text-sm opacity-90">15 de Janeiro, 2024</div>
+            </div>
+            <!-- @END_COMPONENT: Subscription Status -->
+
+            <!-- @COMPONENT: Available Rides -->
+            <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-semibold text-gray-800 dark:text-white">Pedidos Disponíveis</h3>
+                    <span class="px-3 py-1 bg-ocean-blue text-white rounded-full text-sm">3 novos</span>
+                </div>
+                
+                <div class="space-y-4">
+                    <!-- @COMPONENT: Ride Request Card -->
+                    <div class="border border-gray-200 dark:border-gray-700 rounded-xl p-4 hover:shadow-md transition-all">
+                        <div class="flex items-start justify-between mb-3">
+                            <div class="flex-1">
+                                <div class="flex items-center text-sm text-gray-500 dark:text-gray-400 mb-1">
+                                    <i class="fas fa-clock mr-1"></i>
+                                    Há 2 minutos
+                                </div>
+                                <div class="font-medium text-gray-800 dark:text-white mb-2">
+                                    <i class="fas fa-map-marker-alt text-green-500 mr-2"></i>Centro
+                                    <i class="fas fa-arrow-right text-gray-400 mx-2"></i>
+                                    <i class="fas fa-map-marker-alt text-red-500 mr-2"></i>Laginha
+                                </div>
+                                <div class="text-sm text-gray-600 dark:text-gray-300">
+                                    <i class="fas fa-phone mr-2"></i>+238 555 1234
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-2xl font-bold text-ocean-blue">300 CVE</div>
+                                <div class="text-sm text-gray-500">~15 min</div>
+                            </div>
+                        </div>
+                        <div class="flex gap-2">
+                            <button onclick="acceptRide()" class="flex-1 py-2 bg-green-500 text-white rounded-lg font-medium hover:bg-green-600 transition-all">
+                                <i class="fas fa-check mr-2"></i>Aceitar
+                            </button>
+                            <button onclick="rejectRide()" class="flex-1 py-2 bg-gray-500 text-white rounded-lg font-medium hover:bg-gray-600 transition-all">
+                                <i class="fas fa-times mr-2"></i>Recusar
+                            </button>
+                        </div>
+                    </div>
+                    <!-- @END_COMPONENT: Ride Request Card -->
+
+                    <div class="border border-gray-200 dark:border-gray-700 rounded-xl p-4">
+                        <div class="flex items-start justify-between mb-3">
+                            <div class="flex-1">
+                                <div class="flex items-center text-sm text-gray-500 dark:text-gray-400 mb-1">
+                                    <i class="fas fa-clock mr-1"></i>
+                                    Há 5 minutos
+                                </div>
+                                <div class="font-medium text-gray-800 dark:text-white mb-2">
+                                    <i class="fas fa-map-marker-alt text-green-500 mr-2"></i>Laginha
+                                    <i class="fas fa-arrow-right text-gray-400 mx-2"></i>
+                                    <i class="fas fa-map-marker-alt text-red-500 mr-2"></i>Aeroporto
+                                </div>
+                                <div class="text-sm text-gray-600 dark:text-gray-300">
+                                    <i class="fas fa-phone mr-2"></i>+238 555 5678
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-2xl font-bold text-ocean-blue">1.200 CVE</div>
+                                <div class="text-sm text-gray-500">~30 min</div>
+                            </div>
+                        </div>
+                        <div class="flex gap-2">
+                            <button class="flex-1 py-2 bg-green-500 text-white rounded-lg font-medium hover:bg-green-600 transition-all">
+                                <i class="fas fa-check mr-2"></i>Aceitar
+                            </button>
+                            <button class="flex-1 py-2 bg-gray-500 text-white rounded-lg font-medium hover:bg-gray-600 transition-all">
+                                <i class="fas fa-times mr-2"></i>Recusar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- @END_COMPONENT: Available Rides -->
+
+            <!-- @COMPONENT: Active Ride -->
+            <div id="activeRide" class="bg-ocean-blue rounded-2xl text-white p-6 hidden">
+                <h3 class="text-lg font-semibold mb-4">Corrida Ativa</h3>
+                
+                <div class="bg-white bg-opacity-20 rounded-xl p-4 mb-4">
+                    <div class="font-medium mb-2">Centro → Laginha</div>
+                    <div class="text-sm opacity-90 mb-2">Passageiro: João Silva</div>
+                    <div class="text-sm opacity-90">Telefone: +238 555 1234</div>
+                </div>
+                
+                <div class="flex gap-2">
+                    <button onclick="startRide()" class="flex-1 py-3 bg-green-500 text-white rounded-lg font-medium hover:bg-green-600 transition-all">
+                        <i class="fas fa-play mr-2"></i>Iniciar Corrida
+                    </button>
+                    <button onclick="finishRide()" class="flex-1 py-3 bg-red-500 text-white rounded-lg font-medium hover:bg-red-600 transition-all hidden">
+                        <i class="fas fa-stop mr-2"></i>Finalizar
+                    </button>
+                </div>
+            </div>
+            <!-- @END_COMPONENT: Active Ride -->
+
+            <!-- @COMPONENT: Today's Stats -->
+            <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6">
+                <h3 class="text-lg font-semibold text-gray-800 dark:text-white mb-4">Hoje</h3>
+                
+                <div class="grid grid-cols-3 gap-4">
+                    <div class="text-center">
+                        <div class="text-2xl font-bold text-ocean-blue">8</div>
+                        <div class="text-sm text-gray-600 dark:text-gray-400">Corridas</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-2xl font-bold text-green-500">2.400</div>
+                        <div class="text-sm text-gray-600 dark:text-gray-400">CVE</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-2xl font-bold text-sun-yellow">4.8</div>
+                        <div class="text-sm text-gray-600 dark:text-gray-400">Avaliação</div>
+                    </div>
+                </div>
+            </div>
+            <!-- @END_COMPONENT: Today's Stats -->
+        </div>
+
+        <!-- @COMPONENT: Driver Bottom Navigation -->
+        <div class="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700">
+            <div class="flex justify-around py-2">
+                <button class="flex flex-col items-center py-2 px-4 text-sun-yellow">
+                    <i class="fas fa-home text-xl mb-1"></i>
+                    <span class="text-xs">Início</span>
+                </button>
+                <button class="flex flex-col items-center py-2 px-4 text-gray-500">
+                    <i class="fas fa-history text-xl mb-1"></i>
+                    <span class="text-xs">Histórico</span>
+                </button>
+                <button class="flex flex-col items-center py-2 px-4 text-gray-500">
+                    <i class="fas fa-wallet text-xl mb-1"></i>
+                    <span class="text-xs">Carteira</span>
+                </button>
+                <button class="flex flex-col items-center py-2 px-4 text-gray-500">
+                    <i class="fas fa-user text-xl mb-1"></i>
+                    <span class="text-xs">Perfil</span>
+                </button>
+            </div>
+        </div>
+        <!-- @END_COMPONENT: Driver Bottom Navigation -->
+    </div>
+    <!-- @END_COMPONENT: Driver App -->
+
+    <!-- @COMPONENT: Toast Notifications -->
+    <div id="toastContainer" class="fixed top-20 right-4 z-50 space-y-2"></div>
+    <!-- @END_COMPONENT: Toast Notifications -->
+
+    <script>
+        // TODO: Implement proper authentication, API calls, and state management
+        
+        // Theme toggle functionality
+        (function() {
+            const themeToggle = document.getElementById('themeToggle');
+            const html = document.documentElement;
+            
+            // Check for saved theme preference or default to 'light'
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            html.classList.toggle('dark', savedTheme === 'dark');
+            
+            themeToggle.addEventListener('click', () => {
+                html.classList.toggle('dark');
+                const newTheme = html.classList.contains('dark') ? 'dark' : 'light';
+                localStorage.setItem('theme', newTheme);
+            });
+        })();
+        
+        // Modal functions
+        function showLoginModal() {
+            document.getElementById('loginModal').classList.remove('hidden');
+        }
+        
+        function hideLoginModal() {
+            document.getElementById('loginModal').classList.add('hidden');
+        }
+        
+        // App navigation functions
+        function showRideApp() {
+            document.getElementById('rideApp').classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        }
+        
+        function hideRideApp() {
+            document.getElementById('rideApp').classList.add('hidden');
+            document.body.style.overflow = 'auto';
+        }
+        
+        function showDriverApp() {
+            document.getElementById('driverApp').classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        }
+        
+        function hideDriverApp() {
+            document.getElementById('driverApp').classList.add('hidden');
+            document.body.style.overflow = 'auto';
+        }
+        
+        // Price calculation function
+        function calculatePrice() {
+            // TODO: Implement real price calculation based on origin/destination
+            const priceResult = document.getElementById('priceResult');
+            const pricePrompt = document.getElementById('pricePrompt');
+            
+            pricePrompt.classList.add('hidden');
+            priceResult.classList.remove('hidden');
+            
+            showToast('Preço calculado com sucesso!', 'success');
+        }
+        
+        // Ride functions
+        function callTaxi() {
+            // TODO: Implement real taxi calling functionality
+            showToast('Solicitação enviada! Aguardando motorista...', 'info');
+            
+            // Simulate driver acceptance after 3 seconds
+            setTimeout(() => {
+                showToast('Motorista encontrado! João Silva está a caminho.', 'success');
+            }, 3000);
+        }
+        
+        function acceptRide() {
+            // TODO: Implement ride acceptance logic
+            document.getElementById('activeRide').classList.remove('hidden');
+            showToast('Corrida aceita! Entre em contato com o passageiro.', 'success');
+        }
+        
+        function rejectRide() {
+            // TODO: Implement ride rejection logic
+            showToast('Corrida recusada.', 'info');
+        }
+        
+        function startRide() {
+            // TODO: Implement ride start logic
+            showToast('Corrida iniciada!', 'success');
+        }
+        
+        function finishRide() {
+            // TODO: Implement ride completion logic
+            showToast('Corrida finalizada com sucesso!', 'success');
+            document.getElementById('activeRide').classList.add('hidden');
+        }
+        
+        // Toast notification system
+        function showToast(message, type = 'info') {
+            const toastContainer = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            
+            const bgColor = {
+                'success': 'bg-green-500',
+                'error': 'bg-red-500',
+                'warning': 'bg-yellow-500',
+                'info': 'bg-ocean-blue'
+            }[type] || 'bg-ocean-blue';
+            
+            toast.className = `${bgColor} text-white px-6 py-3 rounded-lg shadow-lg transform translate-x-full transition-transform duration-300`;
+            toast.textContent = message;
+            
+            toastContainer.appendChild(toast);
+            
+            // Slide in
+            setTimeout(() => {
+                toast.classList.remove('translate-x-full');
+            }, 100);
+            
+            // Remove after 3 seconds
+            setTimeout(() => {
+                toast.classList.add('translate-x-full');
+                setTimeout(() => {
+                    toastContainer.removeChild(toast);
+                }, 300);
+            }, 3000);
+        }
+        
+        // Signup functions
+        function showPassengerSignup() {
+            hideLoginModal();
+            showToast('Redirecionando para cadastro de passageiro...', 'info');
+            // TODO: Implement passenger signup flow
+        }
+        
+        function showDriverSignup() {
+            hideLoginModal();
+            showToast('Redirecionando para cadastro de motorista...', 'info');
+            // TODO: Implement driver signup flow
+        }
+        
+        // Smooth scrolling for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+        
+        // Close modals when clicking outside
+        document.addEventListener('click', function(e) {
+            const modal = document.getElementById('loginModal');
+            if (e.target === modal) {
+                hideLoginModal();
+            }
+        });
+        
+        // Keyboard navigation
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                hideLoginModal();
+                if (!document.getElementById('rideApp').classList.contains('hidden')) {
+                    hideRideApp();
+                }
+                if (!document.getElementById('driverApp').classList.contains('hidden')) {
+                    hideDriverApp();
+                }
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,517 @@
+<html lang="pt-CV">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TáxiMindelo - Transporte Moderno em Cabo Verde</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'inter': ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        'ocean': {
+                            400: '#0EA5E9',
+                            500: '#0284C7',
+                            600: '#0369A1',
+                        },
+                        'sun': {
+                            400: '#F59E0B',
+                            500: '#EAB308',
+                            600: '#CA8A04',
+                        }
+                    },
+                    backdropBlur: {
+                        xs: '2px',
+                    }
+                }
+            }
+        };
+    </script>
+    <style>
+        .glass {
+            background: rgba(255, 255, 255, 0.25);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+        }
+        .glass-dark {
+            background: rgba(30, 30, 30, 0.7);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .gradient-ocean {
+            background: linear-gradient(135deg, #0EA5E9 0%, #0284C7 100%);
+        }
+        .gradient-sun {
+            background: linear-gradient(135deg, #F59E0B 0%, #EAB308 100%);
+        }
+        .animate-pulse-slow {
+            animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-blue-50 via-white to-yellow-50 min-h-screen">
+    
+    <!-- Navigation -->
+    <!-- @COMPONENT: NavigationHeader [user authentication state, role] -->
+    <nav class="glass fixed top-0 left-0 right-0 z-50 px-4 py-3">
+        <div class="max-w-6xl mx-auto flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 gradient-ocean rounded-xl flex items-center justify-center">
+                    <i class="fas fa-taxi text-white text-lg"></i>
+                </div>
+                <span class="text-xl font-bold text-gray-800">TáxiMindelo</span>
+            </div>
+            <div class="flex items-center space-x-4">
+                <button class="text-gray-600 hover:text-ocean-500 transition-colors">
+                    <i class="fas fa-user-circle text-xl"></i>
+                </button>
+                <button class="text-gray-600 hover:text-ocean-500 transition-colors">
+                    <i class="fas fa-bell text-xl"></i>
+                </button>
+            </div>
+        </div>
+    </nav>
+    <!-- @END_COMPONENT: NavigationHeader -->
+
+    <!-- Main Content -->
+    <main class="pt-20 pb-6 px-4">
+        <div class="max-w-6xl mx-auto">
+            
+            <!-- Welcome Section -->
+            <!-- @COMPONENT: WelcomeCard [user data] -->
+            <div class="glass rounded-3xl p-6 mb-6">
+                <div class="flex items-center justify-between mb-4">
+                    <div>
+                        <h1 class="text-2xl font-bold text-gray-800">Olá, <span data-bind="user.name">Maria</span>!</h1>
+                        <p class="text-gray-600">Para onde vamos hoje?</p>
+                    </div>
+                    <div class="text-right">
+                        <div class="text-sm text-gray-500">Saldo atual</div>
+                        <div class="text-xl font-bold text-ocean-600">2.450 CVE</div>
+                    </div>
+                </div>
+            </div>
+            <!-- @END_COMPONENT: WelcomeCard -->
+
+            <!-- Ride Booking Form -->
+            <!-- @COMPONENT: RideBookingForm [location data, pricing engine] -->
+            <div class="glass rounded-3xl p-6 mb-6">
+                <h2 class="text-xl font-semibold text-gray-800 mb-6 flex items-center">
+                    <i class="fas fa-route text-ocean-500 mr-3"></i>
+                    Pedir Corrida
+                </h2>
+                
+                <form class="space-y-4" data-implementation="Handle ride booking submission">
+                    <!-- Origin Input -->
+                    <div class="relative">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Origem</label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center">
+                                <i class="fas fa-map-marker-alt text-green-500"></i>
+                            </div>
+                            <input type="text" 
+                                   data-mock="true"
+                                   data-bind="booking.origin"
+                                   placeholder="Centro, Rua de Lisboa, Hotel..." 
+                                   class="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-ocean-500 focus:border-transparent bg-white/50 backdrop-blur-sm"
+                                   data-implementation="Implement autocomplete from places.csv">
+                        </div>
+                    </div>
+                    
+                    <!-- Destination Input -->
+                    <div class="relative">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Destino</label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center">
+                                <i class="fas fa-map-marker-alt text-red-500"></i>
+                            </div>
+                            <input type="text" 
+                                   data-mock="true"
+                                   data-bind="booking.destination"
+                                   placeholder="Laginha, Aeroporto, Ribeira Bote..." 
+                                   class="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-ocean-500 focus:border-transparent bg-white/50 backdrop-blur-sm"
+                                   data-implementation="Implement autocomplete from places.csv">
+                        </div>
+                    </div>
+                    
+                    <!-- Phone and Notes Row -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Telefone</label>
+                            <input type="tel" 
+                                   data-bind="booking.phone"
+                                   placeholder="+238 999 99 99" 
+                                   class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-ocean-500 focus:border-transparent bg-white/50 backdrop-blur-sm">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Observações</label>
+                            <input type="text" 
+                                   data-bind="booking.notes"
+                                   placeholder="Bagagem extra, pressa..." 
+                                   class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-ocean-500 focus:border-transparent bg-white/50 backdrop-blur-sm">
+                        </div>
+                    </div>
+                    
+                    <!-- Action Buttons -->
+                    <div class="flex flex-col sm:flex-row gap-3 pt-4">
+                        <button type="button" 
+                                data-event="click:calculatePrice"
+                                class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 py-3 px-6 rounded-xl font-semibold transition-colors flex items-center justify-center">
+                            <i class="fas fa-calculator mr-2"></i>
+                            Calcular Preço
+                        </button>
+                        <button type="submit" 
+                                data-event="click:bookRide"
+                                class="flex-1 gradient-ocean hover:from-ocean-500 hover:to-ocean-600 text-white py-3 px-6 rounded-xl font-semibold transition-all shadow-lg flex items-center justify-center">
+                            <i class="fas fa-taxi mr-2"></i>
+                            Chamar Táxi
+                        </button>
+                    </div>
+                </form>
+                
+                <!-- Price Display -->
+                <!-- @COMPONENT: PriceDisplay [calculated price] -->
+                <div class="mt-6 p-4 bg-gradient-to-r from-sun-50 to-yellow-50 border border-sun-200 rounded-xl" data-implementation="Show/hide based on price calculation">
+                    <div class="flex items-center justify-between">
+                        <span class="text-gray-700 font-medium">Preço estimado:</span>
+                        <span class="text-2xl font-bold text-sun-600" data-bind="calculatedPrice">450 CVE</span>
+                    </div>
+                    <div class="text-sm text-gray-600 mt-1">
+                        Base: 100 CVE + Distância: 350 CVE
+                    </div>
+                </div>
+                <!-- @END_COMPONENT: PriceDisplay -->
+            </div>
+            <!-- @END_COMPONENT: RideBookingForm -->
+
+            <!-- Active Ride Status -->
+            <!-- @COMPONENT: ActiveRideStatus [ride data, driver info] -->
+            <div class="glass rounded-3xl p-6 mb-6" data-implementation="Show only when user has active ride">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-semibold text-gray-800">Corrida Ativa</h3>
+                    <span class="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm font-medium">
+                        A Caminho
+                    </span>
+                </div>
+                
+                <div class="border border-gray-200 rounded-xl p-4 bg-white/30">
+                    <div class="flex items-center space-x-4 mb-4">
+                        <!-- Driver photo placeholder -->
+                        <div class="w-16 h-16 bg-gradient-to-br from-ocean-400 to-ocean-600 rounded-full flex items-center justify-center">
+                            <i class="fas fa-user text-white text-xl"></i>
+                        </div>
+                        <div class="flex-1">
+                            <h4 class="font-semibold text-gray-800" data-bind="driver.name">João Silva</h4>
+                            <p class="text-gray-600 text-sm">Toyota Corolla - Placa: <span data-bind="driver.plate">A-123-CV</span></p>
+                            <div class="flex items-center mt-1">
+                                <div class="flex text-yellow-400 text-sm">
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                </div>
+                                <span class="text-gray-600 text-sm ml-1" data-bind="driver.rating">4.9</span>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <button class="gradient-sun text-white p-3 rounded-full hover:shadow-lg transition-all" 
+                                    data-event="click:callDriver">
+                                <i class="fas fa-phone"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="space-y-3">
+                        <div class="flex items-center text-sm">
+                            <i class="fas fa-map-marker-alt text-green-500 w-4"></i>
+                            <span class="ml-2 text-gray-700">Centro - Rua de Lisboa</span>
+                        </div>
+                        <div class="flex items-center text-sm">
+                            <i class="fas fa-map-marker-alt text-red-500 w-4"></i>
+                            <span class="ml-2 text-gray-700">Aeroporto Internacional</span>
+                        </div>
+                        <div class="flex items-center text-sm">
+                            <i class="fas fa-phone text-ocean-500 w-4"></i>
+                            <span class="ml-2 text-gray-700" data-bind="driver.phone">+238 999 1234</span>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-center justify-between mt-4 pt-4 border-t border-gray-200">
+                        <span class="text-gray-700">Preço da corrida:</span>
+                        <span class="text-xl font-bold text-ocean-600" data-bind="ride.price">1.200 CVE</span>
+                    </div>
+                </div>
+                
+                <!-- Action Buttons -->
+                <div class="flex gap-3 mt-4">
+                    <button class="flex-1 bg-red-500 hover:bg-red-600 text-white py-3 rounded-xl font-semibold transition-colors" 
+                            data-event="click:cancelRide">
+                        Cancelar Corrida
+                    </button>
+                    <button class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 py-3 rounded-xl font-semibold transition-colors flex items-center justify-center" 
+                            data-event="click:addToFavorites">
+                        <i class="fas fa-heart mr-2"></i>
+                        Favoritar Motorista
+                    </button>
+                </div>
+            </div>
+            <!-- @END_COMPONENT: ActiveRideStatus -->
+
+            <!-- Quick Actions -->
+            <!-- @COMPONENT: QuickActions [recent locations, favorites] -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                <div class="glass rounded-3xl p-6">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+                        <i class="fas fa-clock text-ocean-500 mr-3"></i>
+                        Destinos Recentes
+                    </h3>
+                    <!-- @MAP: recentDestinations.map(destination => ( -->
+                    <div class="space-y-3" data-implementation="Load from user's recent ride history">
+                        <button class="w-full text-left p-3 hover:bg-white/50 rounded-xl transition-colors flex items-center">
+                            <i class="fas fa-map-marker-alt text-gray-400 mr-3"></i>
+                            <div>
+                                <div class="font-medium text-gray-800">Aeroporto Internacional</div>
+                                <div class="text-sm text-gray-600">Última viagem: Ontem</div>
+                            </div>
+                        </button>
+                        <button class="w-full text-left p-3 hover:bg-white/50 rounded-xl transition-colors flex items-center">
+                            <i class="fas fa-map-marker-alt text-gray-400 mr-3"></i>
+                            <div>
+                                <div class="font-medium text-gray-800">Laginha Beach</div>
+                                <div class="text-sm text-gray-600">Última viagem: 2 dias atrás</div>
+                            </div>
+                        </button>
+                        <button class="w-full text-left p-3 hover:bg-white/50 rounded-xl transition-colors flex items-center">
+                            <i class="fas fa-map-marker-alt text-gray-400 mr-3"></i>
+                            <div>
+                                <div class="font-medium text-gray-800">Ribeira Bote</div>
+                                <div class="text-sm text-gray-600">Última viagem: 1 semana atrás</div>
+                            </div>
+                        </button>
+                    </div>
+                    <!-- @END_MAP )) -->
+                </div>
+                
+                <div class="glass rounded-3xl p-6">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+                        <i class="fas fa-heart text-red-500 mr-3"></i>
+                        Motoristas Favoritos
+                    </h3>
+                    <!-- @MAP: favoriteDrivers.map(driver => ( -->
+                    <div class="space-y-3" data-implementation="Load from user's favorite drivers">
+                        <button class="w-full text-left p-3 hover:bg-white/50 rounded-xl transition-colors flex items-center">
+                            <div class="w-10 h-10 bg-gradient-to-br from-ocean-400 to-ocean-600 rounded-full flex items-center justify-center mr-3">
+                                <i class="fas fa-user text-white"></i>
+                            </div>
+                            <div>
+                                <div class="font-medium text-gray-800">João Silva</div>
+                                <div class="text-sm text-gray-600 flex items-center">
+                                    <span class="text-yellow-400 mr-1">★</span> 4.9 • Toyota Corolla
+                                </div>
+                            </div>
+                        </button>
+                        <button class="w-full text-left p-3 hover:bg-white/50 rounded-xl transition-colors flex items-center">
+                            <div class="w-10 h-10 bg-gradient-to-br from-sun-400 to-sun-600 rounded-full flex items-center justify-center mr-3">
+                                <i class="fas fa-user text-white"></i>
+                            </div>
+                            <div>
+                                <div class="font-medium text-gray-800">Ana Costa</div>
+                                <div class="text-sm text-gray-600 flex items-center">
+                                    <span class="text-yellow-400 mr-1">★</span> 4.8 • Nissan Sentra
+                                </div>
+                            </div>
+                        </button>
+                    </div>
+                    <!-- @END_MAP )) -->
+                </div>
+            </div>
+            <!-- @END_COMPONENT: QuickActions -->
+
+            <!-- Ride History -->
+            <!-- @COMPONENT: RideHistory [user ride history] -->
+            <div class="glass rounded-3xl p-6">
+                <div class="flex items-center justify-between mb-6">
+                    <h3 class="text-lg font-semibold text-gray-800 flex items-center">
+                        <i class="fas fa-history text-ocean-500 mr-3"></i>
+                        Histórico de Corridas
+                    </h3>
+                    <button class="text-ocean-500 text-sm font-medium hover:text-ocean-600 transition-colors">
+                        Ver Tudo
+                    </button>
+                </div>
+                
+                <!-- @MAP: rideHistory.map(ride => ( -->
+                <div class="space-y-4" data-implementation="Load from user's ride history">
+                    <div class="border border-gray-200 rounded-xl p-4 bg-white/30">
+                        <div class="flex items-center justify-between mb-3">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-2 h-2 bg-green-500 rounded-full"></div>
+                                <span class="font-medium text-gray-800">Corrida #1234</span>
+                            </div>
+                            <span class="text-sm text-gray-600">Hoje, 14:30</span>
+                        </div>
+                        <div class="space-y-2 text-sm">
+                            <div class="flex items-center">
+                                <i class="fas fa-circle text-green-500 text-xs mr-2"></i>
+                                <span class="text-gray-700">Centro - Rua de Lisboa</span>
+                            </div>
+                            <div class="flex items-center">
+                                <i class="fas fa-circle text-red-500 text-xs mr-2"></i>
+                                <span class="text-gray-700">Aeroporto Internacional</span>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between mt-3 pt-3 border-t border-gray-200">
+                            <span class="text-gray-600">Motorista: João Silva</span>
+                            <span class="font-semibold text-ocean-600">1.200 CVE</span>
+                        </div>
+                    </div>
+                    
+                    <div class="border border-gray-200 rounded-xl p-4 bg-white/30">
+                        <div class="flex items-center justify-between mb-3">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-2 h-2 bg-green-500 rounded-full"></div>
+                                <span class="font-medium text-gray-800">Corrida #1233</span>
+                            </div>
+                            <span class="text-sm text-gray-600">Ontem, 09:15</span>
+                        </div>
+                        <div class="space-y-2 text-sm">
+                            <div class="flex items-center">
+                                <i class="fas fa-circle text-green-500 text-xs mr-2"></i>
+                                <span class="text-gray-700">Hotel Oásis</span>
+                            </div>
+                            <div class="flex items-center">
+                                <i class="fas fa-circle text-red-500 text-xs mr-2"></i>
+                                <span class="text-gray-700">Laginha Beach</span>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between mt-3 pt-3 border-t border-gray-200">
+                            <span class="text-gray-600">Motorista: Ana Costa</span>
+                            <span class="font-semibold text-ocean-600">300 CVE</span>
+                        </div>
+                    </div>
+                </div>
+                <!-- @END_MAP )) -->
+            </div>
+            <!-- @END_COMPONENT: RideHistory -->
+        </div>
+    </main>
+
+    <!-- Bottom Navigation (Mobile) -->
+    <!-- @COMPONENT: BottomNavigation [current route] -->
+    <nav class="fixed bottom-0 left-0 right-0 glass-dark border-t border-white/10 md:hidden">
+        <div class="flex items-center justify-around py-2">
+            <button class="flex flex-col items-center p-3 text-ocean-400">
+                <i class="fas fa-home text-xl mb-1"></i>
+                <span class="text-xs">Início</span>
+            </button>
+            <button class="flex flex-col items-center p-3 text-gray-400 hover:text-ocean-400 transition-colors">
+                <i class="fas fa-history text-xl mb-1"></i>
+                <span class="text-xs">Histórico</span>
+            </button>
+            <button class="flex flex-col items-center p-3 text-gray-400 hover:text-ocean-400 transition-colors">
+                <i class="fas fa-heart text-xl mb-1"></i>
+                <span class="text-xs">Favoritos</span>
+            </button>
+            <button class="flex flex-col items-center p-3 text-gray-400 hover:text-ocean-400 transition-colors">
+                <i class="fas fa-user text-xl mb-1"></i>
+                <span class="text-xs">Perfil</span>
+            </button>
+        </div>
+    </nav>
+    <!-- @END_COMPONENT: BottomNavigation -->
+
+    <!-- Notification Toast -->
+    <!-- @COMPONENT: NotificationToast [notification data] -->
+    <div class="fixed top-20 right-4 glass rounded-xl p-4 max-w-sm z-50 transform translate-x-full transition-transform duration-300" 
+         data-implementation="Show/hide based on real-time notifications">
+        <div class="flex items-center space-x-3">
+            <div class="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
+                <i class="fas fa-check text-white text-sm"></i>
+            </div>
+            <div class="flex-1">
+                <div class="font-medium text-gray-800">Motorista encontrado!</div>
+                <div class="text-sm text-gray-600">João Silva está a caminho</div>
+            </div>
+            <button class="text-gray-400 hover:text-gray-600">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+    </div>
+    <!-- @END_COMPONENT: NotificationToast -->
+
+    <script>
+        // TODO: Implement WebSocket connection for real-time updates
+        // TODO: Implement geolocation for current position (optional)
+        // TODO: Implement price calculation engine
+        // TODO: Implement ride booking flow
+        // TODO: Implement favorite driver management
+        // TODO: Implement notification system
+        
+        (function() {
+            // Mock real-time updates demonstration
+            function showNotification(message, type = 'success') {
+                // Implementation would show toast notifications
+                console.log(`Notification: ${message} (${type})`);
+            }
+
+            function updateRideStatus(status) {
+                // Implementation would update UI based on ride status
+                console.log(`Ride status updated: ${status}`);
+            }
+
+            // Mock price calculation
+            function calculatePrice() {
+                const origin = document.querySelector('input[data-bind="booking.origin"]').value;
+                const destination = document.querySelector('input[data-bind="booking.destination"]').value;
+                
+                if (!origin || !destination) {
+                    alert('Por favor, preencha origem e destino');
+                    return;
+                }
+                
+                // Mock calculation - would use real pricing engine
+                const mockPrice = Math.floor(Math.random() * 800) + 200;
+                document.querySelector('[data-bind="calculatedPrice"]').textContent = `${mockPrice} CVE`;
+                showNotification('Preço calculado com sucesso!');
+            }
+
+            function bookRide() {
+                // Implementation would handle ride booking
+                showNotification('Procurando motorista disponível...');
+                setTimeout(() => {
+                    showNotification('Motorista encontrado! João Silva está a caminho.');
+                }, 3000);
+            }
+
+            // Event listeners
+            document.querySelector('[data-event="click:calculatePrice"]')?.addEventListener('click', calculatePrice);
+            document.querySelector('[data-event="click:bookRide"]')?.addEventListener('click', function(e) {
+                e.preventDefault();
+                bookRide();
+            });
+
+            // Initialize dark mode support
+            function initTheme() {
+                const hour = new Date().getHours();
+                const isDark = hour < 6 || hour > 18;
+                if (isDark) {
+                    document.body.classList.add('dark');
+                }
+            }
+
+            initTheme();
+        })();
+    </script>
+</body>
+</html>

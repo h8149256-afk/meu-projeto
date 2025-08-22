@@ -31,8 +31,8 @@ class WebSocketManager {
       try {
         const data = JSON.parse(event.data);
         this.emit(data.type, data);
-      } catch (error) {
-        console.error('Failed to parse WebSocket message:', error);
+      } catch {
+        console.error("Invalid WebSocket message format:", event.data);
       }
     };
 

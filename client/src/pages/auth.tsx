@@ -48,7 +48,8 @@ export default function AuthPage() {
   const handleLogin = async (data: LoginData) => {
     try {
       await login(data);
-      const user = JSON.parse(localStorage.getItem("auth_token") || "{}");
+      const token = localStorage.getItem("auth_token");
+      const user = token ? JSON.parse(token) : null;
       
       toast({
         title: "Login realizado com sucesso!",

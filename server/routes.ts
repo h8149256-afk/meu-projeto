@@ -81,8 +81,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
             ws.send(JSON.stringify({ type: 'auth_success', userId }));
           }
         }
-      } catch (error) {
-        console.error('WebSocket message error:', error);
+      } catch {
+        console.error("Invalid WebSocket message format:", message.toString());
       }
     });
 
