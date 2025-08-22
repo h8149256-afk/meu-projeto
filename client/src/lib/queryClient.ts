@@ -19,9 +19,13 @@ export async function apiRequest(
   }
 
   // Add Authorization header if token exists
-  const token = localStorage.getItem("auth_token");
-  if (token) {
-    headers["Authorization"] = `Bearer ${token}`;
+  try {
+    const token = localStorage.getItem("auth_token");
+    if (token && token.trim() !== '') {
+      headers["Authorization"] = `Bearer ${token}`;
+    }
+  } catch (error) {
+    console.warn('Error accessing localStorage:', error);
   }
 
   const res = await fetch(url, {

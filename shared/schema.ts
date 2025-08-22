@@ -104,12 +104,21 @@ export const loginSchema = z.object({
 });
 
 export const registerSchema = insertUserSchema.extend({
-  confirmPassword: z.string(),
+  confirmPassword: z.string().min(1, "Confirmação de senha é obrigatória"),
   licensePlate: z.string().optional(),
   vehicleModel: z.string().optional(),
 }).refine((data) => data.password === data.confirmPassword, {
   message: "Senhas não coincidem",
   path: ["confirmPassword"],
+}).refine((data) => {
+  // If role is driver, licensePlate is required
+  if (data.role === 'driver') {
+    return data.licensePlate && data.licensePlate.trim().length > 0;
+  }
+  return true;
+}, {
+  message: "Placa do veículo é obrigatória para motoristas",
+  path: ["licensePlate"],
 });
 
 // Types

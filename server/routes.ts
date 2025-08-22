@@ -2,6 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { WebSocketServer, WebSocket } from "ws";
 import { storage } from "./storage";
+import { security } from "./security";
 import { loginSchema, registerSchema, insertRideSchema } from "@shared/schema";
 import { z } from "zod";
 
@@ -111,61 +112,199 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Middleware to extract user from token
   async function authMiddleware(req: any, res: any, next: any) {
-    const authHeader = req.headers.authorization;
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return res.status(401).json({ message: 'Token necessário' });
-    }
+    try {
+      const authHeader = req.headers.authorization;
+      if (!authHeader || !authHeader.startsWith('Bearer ')) {
+        console.log('❌ Token não fornecido para:', req.path);
+        return res.status(401).json({ message: 'Token necessário' });
+      }
 
-    const token = authHeader.substring(7);
-    const user = await storage.getUserByToken(token);
-    
-    if (!user) {
-      return res.status(401).json({ message: 'Token inválido' });
-    }
+      const token = authHeader.substring(7);
+      if (!token.trim()) {
+        console.log('❌ Token vazio para:', req.path);
+        return res.status(401).json({ message: 'Token inválido' });
+      }
 
-    req.user = user;
-    next();
+      const user = await storage.getUserByToken(token);
+      
+      if (!user) {
+        console.log('❌ Token inválido ou usuário não encontrado para:', req.path);
+        return res.status(401).json({ message: 'Token inválido ou expirado' });
+      }
+
+      req.user = user;
+      next();
+    } catch (error) {
+      console.error('❌ Erro no middleware de autenticação:', error);
+      res.status(401).json({ message: 'Erro na autenticação' });
+    }
   }
 
   // Auth routes
   app.post('/api/auth/login', async (req, res) => {
+    const clientIp = req.ip || req.connection.remoteAddress || 'unknown';
+    
     try {
-      const credentials = loginSchema.parse(req.body);
+      console.log('🔐 Tentativa de login para:', req.body.email, 'IP:', clientIp);
+      
+      // Rate limiting
+      const rateLimitKey = `login:${clientIp}:${req.body.email}`;
+      if (!security.checkRateLimit(rateLimitKey)) {
+        console.log('🚫 Rate limit atingido para:', req.body.email);
+        return res.status(429).json({ 
+          message: 'Muitas tentativas de login. Tente novamente em 15 minutos.' 
+        });
+      }
+      
+      // Validate and sanitize input
+      const sanitizedEmail = security.sanitizeInput(req.body.email);
+      const credentials = loginSchema.parse({
+        email: sanitizedEmail,
+        password: req.body.password
+      });
+      
+      // Additional email validation
+      const emailValidation = security.validateEmail(credentials.email);
+      if (!emailValidation.isValid) {
+        return res.status(400).json({ message: emailValidation.message });
+      }
+      
+      // Attempt login
       const result = await storage.login(credentials);
       
       if (!result) {
-        return res.status(401).json({ message: 'Credenciais inválidas' });
+        console.log('❌ Login falhou - credenciais inválidas para:', credentials.email);
+        await storage.logAction(null, 'login_failed', { 
+          email: credentials.email, 
+          ip: clientIp,
+          userAgent: req.headers['user-agent'] 
+        });
+        return res.status(401).json({ message: 'Email ou senha incorretos' });
       }
 
+      // Reset rate limit on successful login
+      security.resetRateLimit(rateLimitKey);
+      
+      console.log('✅ Login realizado com sucesso para:', result.user.email, 'como', result.user.role);
+      await storage.logAction(result.user.id, 'login_success', { 
+        ip: clientIp,
+        userAgent: req.headers['user-agent']
+      });
+      
       res.json(result);
-    } catch (error) {
+    } catch (error: any) {
+      console.error('❌ Erro no login:', error);
+      if (error.errors) {
+        return res.status(400).json({ 
+          message: 'Dados inválidos', 
+          errors: error.errors 
+        });
+      }
       res.status(400).json({ message: 'Dados inválidos' });
     }
   });
 
   app.post('/api/auth/register', async (req, res) => {
+    const clientIp = req.ip || req.connection.remoteAddress || 'unknown';
+    
     try {
-      const userData = registerSchema.parse(req.body);
+      console.log('📝 Tentativa de registro para:', req.body.email, 'como', req.body.role, 'IP:', clientIp);
+      
+      // Rate limiting for registrations
+      const rateLimitKey = `register:${clientIp}`;
+      if (!security.checkRateLimit(rateLimitKey)) {
+        console.log('🚫 Rate limit atingido para registro do IP:', clientIp);
+        return res.status(429).json({ 
+          message: 'Muitas tentativas de registro. Tente novamente em 15 minutos.' 
+        });
+      }
+      
+      // Validate and sanitize input
+      const sanitizedData = {
+        email: security.sanitizeInput(req.body.email),
+        name: security.sanitizeInput(req.body.name),
+        phone: security.sanitizeInput(req.body.phone),
+        licensePlate: req.body.licensePlate ? security.sanitizeInput(req.body.licensePlate) : undefined,
+        vehicleModel: req.body.vehicleModel ? security.sanitizeInput(req.body.vehicleModel) : undefined,
+        password: req.body.password,
+        confirmPassword: req.body.confirmPassword,
+        role: req.body.role
+      };
+      
+      // Additional email validation
+      const emailValidation = security.validateEmail(sanitizedData.email);
+      if (!emailValidation.isValid) {
+        return res.status(400).json({ message: emailValidation.message });
+      }
+      
+      // Password strength validation
+      const passwordValidation = security.validatePasswordStrength(sanitizedData.password);
+      if (!passwordValidation.isValid) {
+        return res.status(400).json({ message: passwordValidation.message });
+      }
+      
+      const userData = registerSchema.parse(sanitizedData);
       
       // Check if email already exists
       const existingUser = await storage.getUserByEmail(userData.email);
       if (existingUser) {
-        return res.status(400).json({ message: 'Email já cadastrado' });
+        console.log('❌ Registro falhou - email já cadastrado:', userData.email);
+        await storage.logAction(null, 'register_failed_email_exists', { 
+          email: userData.email, 
+          ip: clientIp,
+          userAgent: req.headers['user-agent']
+        });
+        return res.status(400).json({ message: 'Este email já está cadastrado' });
+      }
+
+      // Additional validation for drivers
+      if (userData.role === 'driver') {
+        if (!userData.licensePlate?.trim()) {
+          console.log('❌ Registro falhou - motorista sem placa');
+          return res.status(400).json({ message: 'Placa do veículo é obrigatória para motoristas' });
+        }
+        
+        // Check if license plate already exists
+        const existingDriver = await storage.getDriverByLicensePlate(userData.licensePlate.trim());
+        if (existingDriver) {
+          console.log('❌ Registro falhou - placa já cadastrada:', userData.licensePlate);
+          return res.status(400).json({ message: 'Esta placa já está cadastrada' });
+        }
       }
 
       const result = await storage.register(userData);
+      
+      // Reset rate limit on successful registration
+      security.resetRateLimit(rateLimitKey);
+      
+      console.log('✅ Registro realizado com sucesso para:', result.user.email, 'como', result.user.role);
+      await storage.logAction(result.user.id, 'register_success', { 
+        role: result.user.role, 
+        ip: clientIp,
+        userAgent: req.headers['user-agent']
+      });
+      
       res.json(result);
     } catch (error: any) {
+      console.error('❌ Erro no registro:', error);
       if (error.errors) {
-        res.status(400).json({ message: 'Dados inválidos', errors: error.errors });
-      } else {
-        res.status(400).json({ message: error.message || 'Erro ao registrar usuário' });
+        return res.status(400).json({ 
+          message: 'Dados inválidos', 
+          errors: error.errors.map((e: any) => ({ field: e.path.join('.'), message: e.message })) 
+        });
       }
+      res.status(400).json({ message: error.message || 'Erro ao registrar usuário' });
     }
   });
 
   app.get('/api/auth/me', authMiddleware, (req: any, res) => {
-    res.json({ user: req.user });
+    try {
+      console.log('👤 Solicitação de dados do usuário para:', req.user.email);
+      res.json({ user: req.user });
+    } catch (error) {
+      console.error('❌ Erro ao buscar dados do usuário:', error);
+      res.status(500).json({ message: 'Erro interno do servidor' });
+    }
   });
 
   // Price calculation

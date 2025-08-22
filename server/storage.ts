@@ -15,7 +15,7 @@ import {
   type RideWithDetails
 } from "@shared/schema";
 
-const JWT_SECRET = process.env.JWT_SECRET || "mindelo_ride_secret_key_2024";
+const JWT_SECRET = process.env.JWT_SECRET || "mindelo_ride_secret_key_2024_secure_" + Date.now();
 
 export interface IStorage {
   // Auth methods
@@ -31,6 +31,7 @@ export interface IStorage {
   // Driver methods
   getDriver(id: string): Promise<Driver | null>;
   getDriverByUserId(userId: string): Promise<Driver | null>;
+  getDriverByLicensePlate(licensePlate: string): Promise<Driver | null>;
   createDriver(driverData: InsertDriver): Promise<Driver>;
   updateDriver(id: string, data: Partial<Driver>): Promise<Driver | null>;
   
@@ -157,7 +158,18 @@ export class MemoryStorage implements IStorage {
   }
 
   async register(userData: RegisterData): Promise<{ user: UserWithDriver; token: string }> {
-    const hashedPassword = await bcrypt.hash(userData.password, 10);
+    // Additional validation
+    if (!userData.email?.trim()) {
+      throw new Error('Email é obrigatório');
+    }
+    if (!userData.password || userData.password.length < 6) {
+      throw new Error('Senha deve ter pelo menos 6 caracteres');
+    }
+    if (!userData.name?.trim()) {
+      throw new Error('Nome é obrigatório');
+    }
+    
+    const hashedPassword = await bcrypt.hash(userData.password, 12); // Increased salt rounds
     const userId = this.generateId();
     
     const newUser: User = {
@@ -173,12 +185,16 @@ export class MemoryStorage implements IStorage {
     this.users.set(userId, newUser);
 
     if (userData.role === 'driver' && userData.licensePlate) {
+      if (!userData.licensePlate.trim()) {
+        throw new Error('Placa do veículo é obrigatória para motoristas');
+      }
+      
       const driverId = this.generateId();
       const driver: Driver = {
         id: driverId,
         userId: userId,
-        licensePlate: userData.licensePlate!,
-        vehicleModel: userData.vehicleModel || null,
+        licensePlate: userData.licensePlate.trim().toUpperCase(),
+        vehicleModel: userData.vehicleModel?.trim() || null,
         isVerified: false,
         rating: null,
         totalRides: 0
@@ -215,9 +231,26 @@ export class MemoryStorage implements IStorage {
 
   async getUserByToken(token: string): Promise<UserWithDriver | null> {
     try {
-      const decoded = jwt.verify(token, JWT_SECRET) as { userId: string };
-      return await this.getUserWithDriver(decoded.userId);
-    } catch {
+      if (!token?.trim()) {
+        return null;
+      }
+      
+      const decoded = jwt.verify(token, JWT_SECRET) as { userId: string; role: string };
+      
+      if (!decoded.userId) {
+        return null;
+      }
+      
+      const user = await this.getUserWithDriver(decoded.userId);
+      
+      // Verify user still exists and role matches
+      if (!user || user.role !== decoded.role) {
+        return null;
+      }
+      
+      return user;
+    } catch (error) {
+      console.error('Erro ao verificar token:', error);
       return null;
     }
   }
@@ -264,6 +297,13 @@ export class MemoryStorage implements IStorage {
 
   async getDriverByUserId(userId: string): Promise<Driver | null> {
     return Array.from(this.drivers.values()).find(d => d.userId === userId) || null;
+  }
+
+  async getDriverByLicensePlate(licensePlate: string): Promise<Driver | null> {
+    const normalizedPlate = licensePlate.trim().toUpperCase();
+    return Array.from(this.drivers.values()).find(d => 
+      d.licensePlate.trim().toUpperCase() === normalizedPlate
+    ) || null;
   }
 
   async createDriver(driverData: InsertDriver): Promise<Driver> {

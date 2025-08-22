@@ -47,29 +47,24 @@ export default function AuthPage() {
 
   const handleLogin = async (data: LoginData) => {
     try {
-      await login(data);
-      const token = localStorage.getItem("auth_token");
-      const user = token ? JSON.parse(token) : null;
+      const result = await login(data);
       
       toast({
         title: "Login realizado com sucesso!",
         description: "Bem-vindo ao MindeloRide.",
       });
 
-      // Redirect based on user role
+      // Get user data from the auth context after successful login
       setTimeout(() => {
-        if (registerForm.getValues("role") === "driver") {
-          setLocation("/driver");
-        } else if (registerForm.getValues("role") === "admin") {
-          setLocation("/admin-secret-2024");
-        } else {
-          setLocation("/passenger");
-        }
-      }, 1000);
+        // The auth context will have the user data
+        // We'll check it in a moment, but for now redirect to a safe page
+        window.location.href = '/';
+      }, 1500);
     } catch (error: any) {
+      console.error('Login error:', error);
       toast({
         title: "Erro no login",
-        description: error.message || "Credenciais inválidas.",
+        description: error.message || "Email ou senha incorretos.",
         variant: "destructive",
       });
     }
@@ -77,7 +72,17 @@ export default function AuthPage() {
 
   const handleRegister = async (data: RegisterData) => {
     try {
-      await register(data);
+      // Validate driver-specific fields
+      if (data.role === 'driver' && !data.licensePlate?.trim()) {
+        toast({
+          title: "Erro no cadastro",
+          description: "Placa do veículo é obrigatória para motoristas.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      const result = await register(data);
       
       toast({
         title: "Cadastro realizado com sucesso!",
@@ -86,18 +91,21 @@ export default function AuthPage() {
           : "Bem-vindo ao MindeloRide! Agora você pode solicitar corridas.",
       });
 
-      // Redirect based on user role
+      // Redirect to appropriate dashboard
       setTimeout(() => {
         if (data.role === "driver") {
           setLocation("/driver");
+        } else if (data.role === "admin") {
+          setLocation("/admin-secret-2024");
         } else {
           setLocation("/passenger");
         }
-      }, 1000);
+      }, 1500);
     } catch (error: any) {
+      console.error('Registration error:', error);
       toast({
         title: "Erro no cadastro",
-        description: error.message || "Erro ao criar conta.",
+        description: error.message || "Erro ao criar conta. Verifique os dados e tente novamente.",
         variant: "destructive",
       });
     }

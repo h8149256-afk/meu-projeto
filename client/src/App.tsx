@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeProvider } from "@/components/theme-provider";
 import { AuthProvider } from "@/hooks/use-auth";
+import { AuthRedirect } from "@/components/auth-redirect";
 import LandingPage from "@/pages/landing";
 import AuthPage from "@/pages/auth";
 import PassengerDashboard from "@/pages/passenger-dashboard";
@@ -16,7 +17,10 @@ function Router() {
   return (
     <Switch>
       <Route path="/" component={LandingPage} />
-      <Route path="/auth" component={AuthPage} />
+      <Route path="/auth">
+        <AuthPage />
+        <AuthRedirect />
+      </Route>
       <Route path="/passenger" component={PassengerDashboard} />
       <Route path="/driver" component={DriverDashboard} />
       <Route path="/admin-secret-2024" component={AdminDashboard} />
