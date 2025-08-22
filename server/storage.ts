@@ -165,8 +165,8 @@ export class MemoryStorage implements IStorage {
       email: userData.email,
       password: hashedPassword,
       name: userData.name,
-      phone: userData.phone,
-      role: userData.role,
+      phone: userData.phone || null,
+      role: userData.role as "passenger" | "driver" | "admin",
       createdAt: new Date()
     };
 
@@ -177,8 +177,8 @@ export class MemoryStorage implements IStorage {
       const driver: Driver = {
         id: driverId,
         userId: userId,
-        licensePlate: userData.licensePlate,
-        vehicleModel: userData.vehicleModel,
+        licensePlate: userData.licensePlate!,
+        vehicleModel: userData.vehicleModel || null,
         isVerified: false,
         rating: null,
         totalRides: 0
@@ -238,7 +238,7 @@ export class MemoryStorage implements IStorage {
       }
     }
 
-    return { ...user, driver, subscription };
+    return { ...user, driver: driver || undefined, subscription: subscription || undefined };
   }
 
   async getUser(id: string): Promise<UserWithDriver | null> {
@@ -270,7 +270,9 @@ export class MemoryStorage implements IStorage {
     const id = this.generateId();
     const driver: Driver = {
       id,
-      ...driverData,
+      userId: driverData.userId,
+      licensePlate: driverData.licensePlate,
+      vehicleModel: driverData.vehicleModel || null,
       isVerified: false,
       rating: null,
       totalRides: 0
@@ -292,7 +294,15 @@ export class MemoryStorage implements IStorage {
     const id = this.generateId();
     const ride: Ride = {
       id,
-      ...rideData,
+      passengerId: rideData.passengerId,
+      driverId: rideData.driverId || null,
+      origin: rideData.origin,
+      destination: rideData.destination,
+      passengerPhone: rideData.passengerPhone,
+      notes: rideData.notes || null,
+      estimatedPrice: rideData.estimatedPrice,
+      finalPrice: rideData.finalPrice || null,
+      distance: rideData.distance || null,
       status: 'pending',
       requestedAt: new Date(),
       acceptedAt: null,
@@ -319,13 +329,13 @@ export class MemoryStorage implements IStorage {
       }
     }
 
-    return { ...ride, passenger, driver };
+    return { ...ride, passenger, driver: driver || undefined };
   }
 
   async getRidesByPassenger(passengerId: string): Promise<RideWithDetails[]> {
     const ridesList = Array.from(this.rides.values())
       .filter(ride => ride.passengerId === passengerId)
-      .sort((a, b) => b.requestedAt.getTime() - a.requestedAt.getTime());
+      .sort((a, b) => (b.requestedAt?.getTime() || 0) - (a.requestedAt?.getTime() || 0));
 
     const results = await Promise.all(ridesList.map(ride => this.getRide(ride.id)));
     return results.filter(r => r !== null) as RideWithDetails[];
@@ -334,7 +344,7 @@ export class MemoryStorage implements IStorage {
   async getRidesByDriver(driverId: string): Promise<RideWithDetails[]> {
     const ridesList = Array.from(this.rides.values())
       .filter(ride => ride.driverId === driverId)
-      .sort((a, b) => b.requestedAt.getTime() - a.requestedAt.getTime());
+      .sort((a, b) => (b.requestedAt?.getTime() || 0) - (a.requestedAt?.getTime() || 0));
 
     const results = await Promise.all(ridesList.map(ride => this.getRide(ride.id)));
     return results.filter(r => r !== null) as RideWithDetails[];
@@ -343,7 +353,7 @@ export class MemoryStorage implements IStorage {
   async getPendingRides(): Promise<RideWithDetails[]> {
     const ridesList = Array.from(this.rides.values())
       .filter(ride => ride.status === 'pending')
-      .sort((a, b) => b.requestedAt.getTime() - a.requestedAt.getTime());
+      .sort((a, b) => (b.requestedAt?.getTime() || 0) - (a.requestedAt?.getTime() || 0));
 
     const results = await Promise.all(ridesList.map(ride => this.getRide(ride.id)));
     return results.filter(r => r !== null) as RideWithDetails[];
@@ -378,7 +388,8 @@ export class MemoryStorage implements IStorage {
     const id = this.generateId();
     const subscription: Subscription = {
       id,
-      ...subscriptionData,
+      driverId: subscriptionData.driverId,
+      status: subscriptionData.status || 'trial',
       trialEndsAt: subscriptionData.trialEndsAt || null,
       currentPeriodStart: subscriptionData.currentPeriodStart || null,
       currentPeriodEnd: subscriptionData.currentPeriodEnd || null,
@@ -418,7 +429,7 @@ export class MemoryStorage implements IStorage {
     if (!favoriteDriverIds) return [];
 
     const favoriteDrivers: Driver[] = [];
-    for (const driverId of favoriteDriverIds) {
+    for (const driverId of Array.from(favoriteDriverIds)) {
       const driver = this.drivers.get(driverId);
       if (driver) {
         favoriteDrivers.push(driver);
@@ -435,7 +446,7 @@ export class MemoryStorage implements IStorage {
 
   async getAllRides(): Promise<RideWithDetails[]> {
     const allRides = Array.from(this.rides.values())
-      .sort((a, b) => b.requestedAt.getTime() - a.requestedAt.getTime());
+      .sort((a, b) => (b.requestedAt?.getTime() || 0) - (a.requestedAt?.getTime() || 0));
     const results = await Promise.all(allRides.map(ride => this.getRide(ride.id)));
     return results.filter(r => r !== null) as RideWithDetails[];
   }
