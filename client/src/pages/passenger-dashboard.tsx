@@ -125,7 +125,8 @@ export default function PassengerDashboard() {
     return `${(priceInCents / 100).toFixed(0)} CVE`;
   };
 
-  const formatDateTime = (timestamp: Date) => {
+  const formatDateTime = (timestamp: Date | null) => {
+    if (!timestamp) return 'N/A';
     return new Date(timestamp).toLocaleString('pt-CV');
   };
 
@@ -268,9 +269,9 @@ export default function PassengerDashboard() {
               <CardTitle data-testid="text-favorites-title">Motoristas Favoritos</CardTitle>
             </CardHeader>
             <CardContent>
-              {favorites && favorites.length > 0 ? (
+              {favorites && Array.isArray(favorites) && favorites.length > 0 ? (
                 <div className="space-y-3">
-                  {favorites.map((driver: any) => (
+                  {(favorites as any[]).map((driver: any) => (
                     <div
                       key={driver.id}
                       className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg"

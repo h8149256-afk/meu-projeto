@@ -78,7 +78,8 @@ export default function AdminDashboard() {
     return `${(priceInCents / 100).toFixed(0)} CVE`;
   };
 
-  const formatDateTime = (timestamp: Date) => {
+  const formatDateTime = (timestamp: Date | null) => {
+    if (!timestamp) return 'N/A';
     return new Date(timestamp).toLocaleString('pt-CV');
   };
 
@@ -138,7 +139,7 @@ export default function AdminDashboard() {
 
   // Calculate some additional metrics
   const todayRides = rides?.filter(ride => 
-    new Date(ride.requestedAt).toDateString() === new Date().toDateString()
+    ride.requestedAt ? new Date(ride.requestedAt).toDateString() === new Date().toDateString() : false
   ) || [];
 
   const totalRevenue = rides?.reduce((total, ride) => 

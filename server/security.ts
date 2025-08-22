@@ -42,7 +42,7 @@ export class SecurityManager {
   // Clean up old entries periodically
   cleanup(): void {
     const now = Date.now();
-    for (const [key, entry] of this.rateLimitMap) {
+    for (const [key, entry] of Array.from(this.rateLimitMap.entries())) {
       if (now > entry.resetTime) {
         this.rateLimitMap.delete(key);
       }

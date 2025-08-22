@@ -10,7 +10,7 @@ import LandingPage from "@/pages/landing";
 import AuthPage from "@/pages/auth";
 import PassengerDashboard from "@/pages/passenger-dashboard";
 import DriverDashboard from "@/pages/driver-dashboard";
-import AdminDashboard from "@/pages/admin-dashboard";
+import AdminDashboard from "@/pages/admin-dashboard-enhanced";
 import NotFound from "@/pages/not-found";
 
 function Router() {

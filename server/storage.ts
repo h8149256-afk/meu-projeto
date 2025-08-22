@@ -60,6 +60,7 @@ export interface IStorage {
   
   // Audit log
   logAction(userId: string | null, action: string, details?: any): Promise<void>;
+  getAuditLogs(limit?: number): Promise<any[]>;
 }
 
 export class MemoryStorage implements IStorage {
@@ -515,6 +516,17 @@ export class MemoryStorage implements IStorage {
       details
     };
     this.auditLogs.push(logEntry);
+    
+    // Keep only last 1000 logs in memory
+    if (this.auditLogs.length > 1000) {
+      this.auditLogs = this.auditLogs.slice(-1000);
+    }
+  }
+
+  async getAuditLogs(limit: number = 50): Promise<any[]> {
+    return this.auditLogs
+      .sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime())
+      .slice(0, limit);
   }
 }
 

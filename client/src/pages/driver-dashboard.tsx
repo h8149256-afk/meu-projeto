@@ -170,7 +170,8 @@ export default function DriverDashboard() {
     return `${(priceInCents / 100).toFixed(0)} CVE`;
   };
 
-  const formatDateTime = (timestamp: Date) => {
+  const formatDateTime = (timestamp: Date | null) => {
+    if (!timestamp) return 'N/A';
     return new Date(timestamp).toLocaleString('pt-CV');
   };
 

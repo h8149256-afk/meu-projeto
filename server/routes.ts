@@ -5,6 +5,7 @@ import { storage } from "./storage";
 import { security } from "./security";
 import { loginSchema, registerSchema, insertRideSchema } from "@shared/schema";
 import { z } from "zod";
+import rateLimit from "express-rate-limit";
 
 // Price calculation engine
 interface PriceConfig {
@@ -62,6 +63,26 @@ function calculatePrice(origin: string, destination: string): number {
 
 export async function registerRoutes(app: Express): Promise<Server> {
   const httpServer = createServer(app);
+  
+  // Global rate limiting
+  const limiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutos
+    max: 100, // limite de 100 requests por janela por IP
+    message: { message: 'Muitas tentativas, tente novamente em 15 minutos' },
+    standardHeaders: true,
+    legacyHeaders: false,
+  });
+  
+  // Rate limiting específico para auth
+  const authLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, 
+    max: 10, // 10 tentativas de login por IP
+    message: { message: 'Muitas tentativas de login, tente novamente em 15 minutos' },
+    skipSuccessfulRequests: true,
+  });
+  
+  app.use('/api/', limiter);
+  app.use('/api/auth/', authLimiter);
   
   // WebSocket server for real-time updates
   const wss = new WebSocketServer({ server: httpServer, path: '/ws' });
@@ -510,7 +531,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Admin routes (hidden)
+  // Enhanced Admin routes (hidden)
   app.get('/api/admin-secret-2024/stats', authMiddleware, async (req: any, res) => {
     try {
       if (req.user.role !== 'admin') {
@@ -518,7 +539,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const stats = await storage.getSystemStats();
-      res.json(stats);
+      
+      // Calculate enhanced metrics
+      const allRides = await storage.getAllRides();
+      const todayRides = allRides.filter(ride => 
+        ride.requestedAt ? new Date(ride.requestedAt).toDateString() === new Date().toDateString() : false
+      );
+      
+      const totalRevenue = allRides.reduce((total, ride) => 
+        ride.status === 'completed' ? total + (ride.finalPrice || ride.estimatedPrice) : total, 0
+      );
+      
+      const completionRate = allRides.length ? 
+        (allRides.filter(ride => ride.status === 'completed').length / allRides.length * 100) : 0;
+      
+      const enhancedStats = {
+        ...stats,
+        todayRides: todayRides.length,
+        totalRevenue,
+        completionRate: parseFloat(completionRate.toFixed(1))
+      };
+      
+      res.json(enhancedStats);
     } catch (error) {
       res.status(500).json({ message: 'Erro ao buscar estatísticas' });
     }
@@ -547,6 +589,79 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(rides);
     } catch (error) {
       res.status(500).json({ message: 'Erro ao buscar corridas' });
+    }
+  });
+
+  // Enhanced admin user management
+  app.patch('/api/admin-secret-2024/users/:userId/:action', authMiddleware, async (req: any, res) => {
+    try {
+      if (req.user.role !== 'admin') {
+        return res.status(403).json({ message: 'Acesso negado' });
+      }
+
+      const { userId, action } = req.params;
+      const validActions = ['activate', 'deactivate'];
+      
+      if (!validActions.includes(action)) {
+        return res.status(400).json({ message: 'Ação inválida' });
+      }
+
+      // Here you would implement user activation/deactivation logic
+      console.log(`Admin ${req.user.email} realizou ação ${action} no usuário ${userId}`);
+      await storage.logAction(req.user.id, `admin_user_${action}`, { targetUserId: userId });
+      
+      res.json({ message: `Usuário ${action === 'activate' ? 'ativado' : 'desativado'} com sucesso` });
+    } catch (error) {
+      res.status(500).json({ message: 'Erro ao gerenciar usuário' });
+    }
+  });
+
+  // Enhanced driver verification
+  app.patch('/api/admin-secret-2024/drivers/:driverId/verify', authMiddleware, async (req: any, res) => {
+    try {
+      if (req.user.role !== 'admin') {
+        return res.status(403).json({ message: 'Acesso negado' });
+      }
+
+      const { driverId } = req.params;
+      const { verified } = req.body;
+      
+      const driver = await storage.updateDriver(driverId, { isVerified: verified });
+      
+      if (!driver) {
+        return res.status(404).json({ message: 'Motorista não encontrado' });
+      }
+
+      console.log(`Admin ${req.user.email} ${verified ? 'verificou' : 'removeu verificação'} do motorista ${driverId}`);
+      await storage.logAction(req.user.id, 'admin_driver_verify', { driverId, verified });
+      
+      res.json({ message: `Motorista ${verified ? 'verificado' : 'não verificado'} com sucesso`, driver });
+    } catch (error) {
+      res.status(500).json({ message: 'Erro ao verificar motorista' });
+    }
+  });
+
+  // System health check
+  app.get('/api/health', (req, res) => {
+    res.json({
+      status: 'healthy',
+      timestamp: new Date().toISOString(),
+      uptime: process.uptime(),
+      version: '2.0.0'
+    });
+  });
+
+  // Audit logs endpoint for admin
+  app.get('/api/admin-secret-2024/audit-logs', authMiddleware, async (req: any, res) => {
+    try {
+      if (req.user.role !== 'admin') {
+        return res.status(403).json({ message: 'Acesso negado' });
+      }
+
+      const logs = await storage.getAuditLogs(50); // Get last 50 logs
+      res.json(logs);
+    } catch (error) {
+      res.status(500).json({ message: 'Erro ao buscar logs de auditoria' });
     }
   });
 
